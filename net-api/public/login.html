@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión - Comet</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="login-panel">
+      <h1>Iniciar sesión</h1>
+      <form id="loginForm" aria-label="Formulario de inicio de sesión">
+        
+        <label for="username" class="sr-only">Correo electrónico</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          placeholder="Correo electrónico" 
+          class="input-field" 
+          required 
+          aria-required="true" 
+          autocomplete="username">
+
+        <label for="password" class="sr-only">Contraseña</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          placeholder="Contraseña" 
+          class="input-field" 
+          required 
+          aria-required="true" 
+          autocomplete="current-password">
+        
+        <div class="forgot-password">
+          <a href="forgot-password.html" aria-label="Recuperar contraseña">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="sign-in-btn" aria-label="Iniciar sesión">Entrar</button>
+      </form>
+
+      <p class="signup-link">
+        ¿No tienes una cuenta? 
+        <a href="register.html" aria-label="Registrarse">Regístrate</a>
+      </p>
+    </div>
+
+    <div class="image-panel">
+      <img src="https://i.pinimg.com/originals/b4/ba/75/b4ba75f4371e5077d83bd0613f9929cb.jpg" alt="" class="background-image">
+      <h2 class="comet-logo">comet</h2>
+    </div>
+  </div>
+  
+  <script src="js/app.js"></script>
+</body>
+</html>

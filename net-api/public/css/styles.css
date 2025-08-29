@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1e2a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    height: 80vh;
+    background: transparent;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.login-panel {
+    flex: 1;
+    background-color: #252b3a;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #d3d3d3;
+    position: relative;
+}
+
+.login-panel h1 {
+    font-size: 28px;
+    margin: 0 0 20px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #2d3446;
+    color: #d3d3d3;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.input-field:focus {
+    outline: none;
+    background-color: #3a4156;
+}
+
+.forgot-password {
+    text-align: right;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.forgot-password a {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: #d3d3d3;
+}
+
+.sign-in-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3a4156;
+    color: #d3d3d3;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sign-in-btn:hover {
+    background-color: #4a5576;
+}
+
+.signup-link {
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: 20px;
+}
+
+.signup-link a {
+    color: #a0a0a0;
+    text-decoration: none;
+    margin-left: 5px;
+    transition: color 0.3s ease;
+}
+
+.signup-link a:hover {
+    color: #d3d3d3;
+}
+
+.image-panel {
+    flex: 1;
+    position: relative;
+    background-color: #1a1e2a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.background-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+}
+
+.comet-logo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 18px;
+    color: #a0a0a0;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        width: 100%;
+        margin: 0;
+    }
+    .login-panel, .image-panel {
+        flex: 1;
+        height: 50vh;
+    }
+    .background-image {
+        height: 100%;
+    }
+}
