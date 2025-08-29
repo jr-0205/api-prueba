@@ -1,390 +1,428 @@
-/* Estilo global */
+
+/* Estilos generales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-    margin: 0;
-    padding: 0;
-    background-color: #1a1e2a; /* fondo oscuro principal */
-    color: #d3d3d3;            /* texto claro */
-    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow-y: auto;
-    line-height: 1.6;
+  font-family: 'Arial', sans-serif;
+  background: #1B263B; /* Azul oscuro */
+  color: #F5F6F5; /* Blanco suave */
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
-/* Contenedor principal */
-.container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    display: flex;
-    gap: 20px;
-    align-items: stretch;
-    height: calc(100vh - 40px);
-}
-
-/* Encabezados */
-h1 {
-    margin: 0 0 20px;
-    font-size: 24px;
-    color: #ffffff;
-    font-weight: 900;
-    text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
-}
-
-h2 {
-    margin: 20px 0 10px;
-    font-size: 20px;
-    color: #d3d3d3;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-/* Encabezado */
+/* Header */
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #252b3a; /* panel oscuro como login */
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Botón usuario a la izquierda, nav a la derecha */
+  padding: 1rem 2rem;
+  background: #0D1B2A;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 90%;
+  margin: 0 auto;
 }
 
-/* Información de usuario */
+/* User Info */
 .user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    color: #a0a0a0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #415A77;          /* Fondo igual a los botones de nav */
+  border: 2px solid #E8C547;    /* Borde amarillo */
+  padding: 0.5rem 1rem;         /* Espaciado interno */
+  border-radius: 4px;           /* Bordes redondeados */
+  color: #F5F6F5;               /* Color del texto */
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+.user-info:hover,
+.user-info:focus {
+  background: #E8C547;
+  color: #0D1B2A;
+  transform: scale(1.05);
+  outline: none;
 }
 
 .user-info img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #3a4156;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #E8C547;
 }
 
-.user-info img:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px #3a4156;
+.user-info span {
+  font-size: 1rem;
+  font-weight: bold;
 }
 
-/* Botones */
-.btn {
-    background-color: #3a4156;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    color: #d3d3d3;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+/* Navigation */
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.btn:hover {
-    background-color: #4a5576;
-    transform: scale(1.05);
+nav a, nav button, #btnCatalogo {
+  color: #F5F6F5;
+  text-decoration: none;
+  font-size: 1rem;
+  background: #415A77;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid #E8C547;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+  text-align: center;
+  min-width: 80px;
 }
 
-#btnCatalogo, nav a, nav button {
-    background: none;
-    border: none;
-    color: #a0a0a0;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 8px 18px;
-    border-radius: 6px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+nav a:hover, nav button:hover, #btnCatalogo:hover,
+nav a:focus, nav button:focus, #btnCatalogo:focus, #btnUsuario:focus {
+  background: #E8C547;
+  color: #0D1B2A;
+  transform: scale(1.05);
+  outline: none;
 }
 
-#btnCatalogo:hover, nav a:hover, nav button:hover {
-    background-color: #2d3446;
-    transform: scale(1.05);
+#btnCerrarSesion {
+  background: #E8C547;
+  color: #1B263B;
+  font-weight: bold;
+  border: 2px solid #F5F6F5;
 }
 
-/* Formularios */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: #252b3a;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+#btnCerrarSesion:hover, #btnCerrarSesion:focus {
+  background: #F5F6F5;
+  color: #0D1B2A;
+  transform: scale(1.05);
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
+/* Main */
+main {
+  padding: 2rem;
+  max-width: 90%;
+  margin: 0 auto;
 }
 
-.form-group label {
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #a0a0a0;
+h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #E8C547;
+  text-shadow: 0 0 5px rgba(232, 197, 71, 0.5);
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 8px;
-    border: none;
-    border-radius: 4px;
-    background-color: #2d3446;
-    color: #d3d3d3;
-    font-size: 14px;
-    width: 100%;
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #F5F6F5;
 }
 
-.form-group input[type="file"] {
-    padding: 6px;
+/* Carruseles */
+.carrusel-container {
+  position: relative;
+  margin-bottom: 2rem;
+  max-width: 100%;
 }
 
-/* Listas */
-.movies-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-}
-
-.movies-list li {
-    background-color: #252b3a;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.movies-list li button {
-    background-color: #3a4156;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    color: #d3d3d3;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.movies-list li button:hover {
-    background-color: #4a5576;
-}
-
-/* Carrusel */
 .carrusel {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding-left: 12px;
-    gap: 14px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 0;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
 }
 
-.carrusel::-webkit-scrollbar { display: none; }
+.carrusel::-webkit-scrollbar {
+  display: none;
+}
 
 .pelicula {
-    min-width: 160px;
-    max-width: 160px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 8px;
+  min-width: 160px;
+  cursor: pointer;
 }
 
 .pelicula img {
-    width: 160px;
-    height: 240px;
-    object-fit: cover;
-    border-radius: 8px;
-    display: block;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    transition: box-shadow 0.3s ease;
-}
-
-.pelicula:hover {
-    transform: scale(1.15);
-    z-index: 20;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.85);
-}
-
-.pelicula:hover img {
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.9);
+  width: 160px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #415A77;
 }
 
 .titulo-fecha {
-    margin-top: 8px;
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.2;
-    color: #a0a0a0;
+  text-align: center;
+  margin-top: 0.5rem;
 }
 
-/* Mensajes */
-.instructions,
-#message,
-#mensaje-error {
-    font-size: 12px;
-    color: #a0a0a0;
-    margin-top: 10px;
-    text-align: center;
+.titulo-fecha div:first-child {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #F5F6F5;
 }
 
-#mensaje-error {
-    font-weight: 700;
-    font-size: 1.2rem;
+.titulo-fecha div:last-child {
+  font-size: 0.75rem;
+  color: #D8D9DA;
 }
 
-/* Modal Película */
+/* Botones de navegación del carrusel */
+.carrusel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(11, 27, 42, 0.7);
+  color: #E8C547;
+  border: none;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carrusel-nav:hover, .carrusel-nav:focus {
+  background: #E8C547;
+  color: #0D1B2A;
+  outline: none;
+}
+
+.carrusel-nav.prev {
+  left: 0;
+}
+
+.carrusel-nav.next {
+  right: 0;
+}
+
+/* Modal */
 #modalPelicula {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(26, 30, 42, 0.95);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    overflow-y: auto;
-    backdrop-filter: blur(10px);
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 27, 42, 0.9);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 #modalContenido {
-    background-color: #252b3a;
-    position: relative;
-    max-width: 900px;
-    width: 90vw;
-    max-height: 90vh;
-    border-radius: 14px;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    color: #d3d3d3;
-    padding: 20px 24px 28px 24px;
+  background: #0D1B2A;
+  color: #F5F6F5;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  margin: 0 auto;
+  max-height: 90%;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid #E8C547;
+  box-shadow: 0 0 10px rgba(232, 197, 71, 0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 #modalCerrar {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    background: none;
-    border: none;
-    font-size: 32px;
-    color: #a0a0a0;
-    cursor: pointer;
-    font-weight: 900;
-    transition: color 0.25s ease, transform 0.2s ease;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: #415A77;
+  border: none;
+  color: #F5F6F5;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.3s;
 }
 
-#modalCerrar:hover {
-    color: #ffffff;
-    transform: scale(1.15);
+#modalCerrar:hover, #modalCerrar:focus {
+  background: #E8C547;
+  color: #0D1B2A;
 }
 
 #modalTitulo {
-    margin: 0 0 12px 0;
-    font-size: 28px;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #E8C547;
 }
 
 #trailerContainer {
-    position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: 56.25%;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #1a1e2a;
-    box-shadow: 0 0 28px rgba(0, 0, 0, 0.9);
+  flex-grow: 1;
+  margin-bottom: 10px;
+  width: 100%;
 }
 
 #trailerVideo, #trailerIframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-    display: block;
+  width: 100%;
+  height: 65vh;
+  max-height: 650px;
+  border-radius: 6px;
+  aspect-ratio: 16 / 9;
 }
 
 #sinopsis {
-    margin-top: 16px;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #a0a0a0;
-    max-height: 160px;
-    overflow-y: auto;
-    padding-right: 10px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
-/* Enlaces */
-a {
-    color: #a0a0a0;
-    text-decoration: none;
-    transition: color 0.3s ease;
+#btnFavoritoModal {
+  background: #E8C547;
+  color: #1B263B;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
 }
 
-a:hover {
-    color: #ffffff;
+#btnFavoritoModal:hover, #btnFavoritoModal:focus {
+  background: #F5F6F5;
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-    width: 8px;
+/* Mensaje de error */
+#mensaje-error {
+  color: #E63946;
+  text-align: center;
+  padding: 1rem;
+  font-weight: bold;
 }
 
-::-webkit-scrollbar-track {
-    background: #1a1e2a;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #3a4156;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #4a5576;
-}
-
-/* Responsivo */
+/* Responsividad */
 @media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-        height: auto;
-    }
-    .pelicula {
-        min-width: 120px;
-        max-width: 120px;
-    }
-    .pelicula img {
-        width: 120px;
-        height: 180px;
-    }
-    header {
-        flex-direction: column;
-        gap: 10px;
-    }
-    form {
-        padding: 15px;
-    }
+  header {
+    flex-wrap: wrap;
+    padding: 1rem;
+    gap: 0.5rem;
+    width: 94%;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    justify-content: flex-end; /* Mantiene nav a la derecha */
+    gap: 0.5rem;
+  }
+
+  .user-info span {
+    font-size: 0.9rem;
+  }
+
+  nav a, nav button, #btnCatalogo {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+    min-width: 70px;
+  }
+
+  main {
+    padding: 1rem;
+    max-width: 94%;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .pelicula {
+    min-width: 120px;
+  }
+
+  .pelicula img {
+    width: 120px;
+    height: 180px;
+  }
+
+  .titulo-fecha div:first-child {
+    font-size: 0.8rem;
+  }
+
+  .titulo-fecha div:last-child {
+    font-size: 0.7rem;
+  }
+
+  .carrusel-nav {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+  }
+
+  #modalContenido {
+    padding: 0.5rem;
+    max-width: 94%;
+  }
+
+  #modalTitulo {
+    font-size: 1.25rem;
+  }
+
+  #trailerVideo, #trailerIframe {
+    height: 50vh;
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 0.5rem;
+    width: 96%;
+  }
+
+  .user-info img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  nav a, nav button, #btnCatalogo {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    min-width: 60px;
+  }
+
+  main {
+    padding: 0.5rem;
+    max-width: 96%;
+  }
+
+  .pelicula {
+    min-width: 100px;
+  }
+
+  .pelicula img {
+    width: 100px;
+    height: 150px;
+  }
+
+  .carrusel-nav {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1rem;
+  }
+
+  #trailerVideo, #trailerIframe {
+    height: 40vh;
+    max-height: 300px;
+  }
 }

@@ -1,66 +1,74 @@
+// public/js/app.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const message = document.getElementById('message');
 
+    // Manejo del formulario de login
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = loginForm.username.value.trim();
-            const password = loginForm.password.value.trim();
 
-            let userData = null;
+            // Captura valores del formulario
+            const correo = loginForm.username.value.trim(); // input id="username"
+            const contraseña = loginForm.password.value.trim(); // input id="password"
 
-            // login simulado
-            if (username === 'root' && password === 'root123') {
-                userData = { nombre: 'Administrador', rol: 'admin' };
-            } else if (username === 'user' && password === 'user123') {
-                userData = { nombre: 'Usuario', rol: 'user' };
+            if (!correo || !contraseña) {
+                message.textContent = 'Por favor completa todos los campos';
+                message.style.color = '#ff4444';
+                return;
             }
 
-            if (userData) {
-                // Guardar sesión en sessionStorage
-                sessionStorage.setItem('usuario', JSON.stringify(userData));
+            try {
+                // Petición al servidor
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo, contraseña })
+                });
 
-                // Redirigir según rol
-                if (userData.rol === 'admin') {
+                const data = await res.json();
+
+                if (!res.ok) {
+                    message.textContent = data.error || 'Error en el servidor';
+                    message.style.color = '#ff4444';
+                    return;
+                }
+
+                // 🔹 Guardar solo el objeto usuario en sessionStorage
+                sessionStorage.setItem('usuario', JSON.stringify(data.usuario));
+
+                // 🔹 Redirigir según rol
+                if (data.usuario.rol === 'admin') {
                     window.location.href = 'dashboard-root.html';
                 } else {
                     window.location.href = 'dashboard-user.html';
                 }
-            } else {
-                message.textContent = 'Credenciales incorrectas';
+
+            } catch (err) {
+                console.error('❌ Error al iniciar sesión:', err);
+                message.textContent = 'Error al conectar con el servidor';
                 message.style.color = '#ff4444';
             }
         });
     }
 
-    // Mostrar lista de películas si existe el elemento
-    const moviesList = document.getElementById('moviesList');
-    if (moviesList) {
-        fetch('http://localhost:3000/movies')
-            .then(res => res.json())
-            .then(data => {
-                moviesList.innerHTML = data.map(movie => `<li>${movie.title} (${movie.release_year})</li>`).join('');
-            });
-    }
-
-    // Logout
+    // Logout (si existe botón)
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('usuario'); // borrar sesión
+            sessionStorage.removeItem('usuario');
             window.location.href = 'login.html';
         });
     }
 
-    // Validar sesión en páginas de dashboard
+    // Validar sesión en dashboards
     const usuarioJSON = sessionStorage.getItem('usuario');
     if (usuarioJSON) {
         const usuario = JSON.parse(usuarioJSON);
         const nombreElem = document.getElementById('nombreUsuario');
         if (nombreElem) nombreElem.textContent = usuario.nombre;
     } else if (window.location.href.includes('dashboard')) {
-        // Si intenta acceder sin sesión
         alert('No hay sesión activa. Redirigiendo a login...');
         window.location.href = 'login.html';
     }

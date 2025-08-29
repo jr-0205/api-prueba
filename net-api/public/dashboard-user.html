@@ -1,190 +1,236 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>JR-flix - Inicio</title>
-<link rel="stylesheet" href="css/styles2.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FERCHISLAND - Dashboard</title>
+  <link rel="stylesheet" href="css/styles2.css">
+  <style>
+    /* Sidebar overlay estilo Netflix */
+    #sidebarUsuario {
+      position: fixed;
+      top: 0;
+      right: -350px;
+      width: 350px;
+      height: 100%;
+      background: #0D1B2A;
+      color: #F5F6F5;
+      transition: right 0.3s ease;
+      padding: 2rem 1rem;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #sidebarUsuario.active { right: 0; }
+    #overlaySidebar {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background: rgba(0,0,0,0.5);
+      display:none;
+      z-index:1000;
+    }
+    #sidebarUsuario .user-profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #sidebarUsuario .user-profile img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid #E8C547;
+      margin-bottom: 1rem;
+      object-fit: cover;
+    }
+    #sidebarUsuario .user-profile input {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: none;
+    }
+    #sidebarUsuario .user-profile button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #E8C547;
+      color: #1B263B;
+      font-weight: bold;
+      width: 100%;
+    }
+    #sidebarUsuario .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 2rem;
+      background: none;
+      border: none;
+      color: #F5F6F5;
+      cursor: pointer;
+    }
+    /* Ajuste header usuario */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #E8C547;
+      object-fit: cover;
+    }
+
+    /* Modal película actualizado */
+    #modalContenido {
+      max-width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+      background: #0D1B2A;
+      color: #F5F6F5;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #E8C547;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #trailerContainer {
+      width: 100%;
+      max-height: 65vh;
+    }
+
+    #trailerVideo, #trailerIframe {
+      width: 100%;
+      height: auto;
+      max-height: 65vh;
+      border-radius: 6px;
+      aspect-ratio: 16/9;
+    }
+
+    #descripcionBotonContainer {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    #sinopsis {
+      flex: 1;
+      font-size: 1rem;
+    }
+
+    #btnFavoritoModal {
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #E8C547;
+      transition: transform 0.2s;
+    }
+
+    #btnFavoritoModal:hover {
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 768px) {
+      #descripcionBotonContainer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #btnFavoritoModal {
+        align-self: flex-start;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<header>
-  <div class="user-info" aria-label="Información del usuario">
-    <span id="nombreUsuario"></span>
-    <img id="imagenUsuario" src="" alt="Imagen de usuario" />
-  </div>
-
-  <button id="btnCatalogo" aria-label="Mostrar catálogo">Catálogo</button>
-  <div class="flex-spacer"></div>
-  <nav aria-label="Navegación principal">
-    <a href="#" id="btnFavoritos">Favoritos</a>
-    <a href="#" id="btnHistorial">Historial</a>
-    <button id="btnCerrarSesion">Cerrar sesión</button>
-  </nav>
-</header>
-
-<main>
-  <h1>Bienvenido a JR-flix</h1>
-
-  <section id="seccionFavoritos" style="display:none;">
-    <h2>Películas Favoritas</h2>
-    <div class="carrusel" id="favoritosContainer"></div>
-  </section>
-
-  <section id="seccionHistorial" style="display:none;">
-    <h2>Historial de Visualización</h2>
-    <div class="carrusel" id="historialContainer"></div>
-  </section>
-
-  <section id="catalogoPeliculas">
-    <div id="peliculasPorGenero"></div>
-  </section>
-
-  <div id="mensaje-error" style="display:none;"></div>
-</main>
-
-<!-- Modal -->
-<div id="modalPelicula" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
-  <div id="modalContenido">
-    <button id="modalCerrar" aria-label="Cerrar ventana">&times;</button>
-    <h3 id="modalTitulo"></h3>
-    <div id="trailerContainer">
-      <video id="trailerVideo" autoplay muted preload="auto" style="display:none;">
-        <source src="" type="video/mp4"/>
-        Su navegador no soporta la reproducción de video.
-      </video>
-      <iframe id="trailerIframe" style="display:none;" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+  <header>
+    <div class="logo">FERCHISLAND</div>
+    <nav>
+      <a href="#" id="btnFavoritos">Favoritos</a>
+      <a href="#" id="btnHistorial">Historial</a>
+      <button id="btnCatalogo">Catálogo</button>
+    </nav>
+    <div class="user-info" id="btnUsuario">
+      <img id="imagenUsuario" src="https://via.placeholder.com/40x40?text=User" alt="Usuario">
+      <span id="nombreUsuario">Usuario</span>
     </div>
-    <p id="sinopsis"></p>
+    <button id="btnCerrarSesion">Cerrar sesión</button>
+  </header>
+
+  <!-- Sidebar usuario -->
+  <aside id="sidebarUsuario">
+    <button id="cerrarSidebar" class="close-btn">&times;</button>
+    <div class="user-profile">
+      <img id="sidebarImagenUsuario" src="https://via.placeholder.com/80x80?text=User" alt="Usuario">
+      <h2 id="nombreUsuarioSidebar">Usuario</h2>
+      <label>Nombre</label>
+      <input type="text" id="inputNombre">
+      <label>Email</label>
+      <input type="email" id="inputEmail">
+      <label>Imagen URL</label>
+      <input type="text" id="inputImagen">
+      <button id="btnGuardarUsuario">Guardar</button>
+    </div>
+  </aside>
+  <div id="overlaySidebar"></div>
+
+  <main>
+    <section id="seccionFavoritos">
+      <h2>Películas Favoritas</h2>
+      <div class="carrusel-container">
+        <button class="carrusel-nav prev" data-carrusel="favoritosContainer">&lt;</button>
+        <div class="carrusel" id="favoritosContainer"></div>
+        <button class="carrusel-nav next" data-carrusel="favoritosContainer">&gt;</button>
+      </div>
+    </section>
+
+    <section id="seccionHistorial">
+      <h2>Historial de Visualización</h2>
+      <div class="carrusel-container">
+        <button class="carrusel-nav prev" data-carrusel="historialContainer">&lt;</button>
+        <div class="carrusel" id="historialContainer"></div>
+        <button class="carrusel-nav next" data-carrusel="historialContainer">&gt;</button>
+      </div>
+    </section>
+
+    <section id="catalogoPeliculas">
+      <div id="peliculasPorGenero"></div>
+    </section>
+
+    <div id="mensaje-error" style="display:none;"></div>
+  </main>
+
+  <!-- Modal de película -->
+  <div id="modalPelicula" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" style="display:none;">
+    <div id="modalContenido">
+      <button id="modalCerrar" aria-label="Cerrar ventana">&times;</button>
+      <h3 id="modalTitulo"></h3>
+
+      <div id="trailerContainer">
+        <video id="trailerVideo" autoplay muted preload="auto" controls style="display:none;">
+          <source src="" type="video/mp4"/>
+        </video>
+        <iframe id="trailerIframe" frameborder="0" allowfullscreen allow="autoplay" style="display:none;"></iframe>
+      </div>
+
+      <div id="descripcionBotonContainer">
+        <p id="sinopsis">Sin sinopsis disponible.</p>
+        <button id="btnFavoritoModal">☆</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-const usuarioJSON = sessionStorage.getItem('usuario');
-if(!usuarioJSON) { alert('No hay sesión activa'); window.location.href='login.html'; }
-const usuario = JSON.parse(usuarioJSON);
-document.getElementById('nombreUsuario').textContent = usuario.nombre;
-document.getElementById('imagenUsuario').src = usuario.imagen || 'https://via.placeholder.com/32x32?text=User';
-
-const favoritosContainer = document.getElementById('favoritosContainer');
-const historialContainer = document.getElementById('historialContainer');
-const peliculasPorGenero = document.getElementById('peliculasPorGenero');
-const seccionFavoritos = document.getElementById('seccionFavoritos');
-const seccionHistorial = document.getElementById('seccionHistorial');
-const catalogoPeliculas = document.getElementById('catalogoPeliculas');
-const mensajeError = document.getElementById('mensaje-error');
-
-const modal = document.getElementById('modalPelicula');
-const modalTitulo = document.getElementById('modalTitulo');
-const modalCerrar = document.getElementById('modalCerrar');
-const sinopsisElem = document.getElementById('sinopsis');
-const trailerVideo = document.getElementById('trailerVideo');
-const trailerSource = trailerVideo.querySelector('source');
-const trailerIframe = document.getElementById('trailerIframe');
-
-function convertirYoutubeEmbed(url) {
-  if(url.includes('watch?v=')) return url.replace('watch?v=','embed/');
-  if(url.includes('youtu.be/')) return url.replace('youtu.be/','www.youtube.com/embed/');
-  return url;
-}
-
-function limpiarTrailer() {
-  trailerVideo.pause(); trailerSource.src=''; trailerVideo.load(); trailerVideo.style.display='none';
-  trailerIframe.src=''; trailerIframe.style.display='none';
-}
-
-function abrirModal(pelicula) {
-  fetch(`/api/movies/${pelicula.id}`)
-    .then(res => res.ok ? res.json() : Promise.reject('Error al obtener detalles'))
-    .then(detalle => {
-      modalTitulo.textContent = detalle.titulo;
-      sinopsisElem.textContent = detalle.sinopsis || 'Sin sinopsis disponible.';
-      limpiarTrailer();
-      if(detalle.trailer){
-        const esYT = detalle.trailer.includes('youtube.com') || detalle.trailer.includes('youtu.be');
-        if(esYT){
-          trailerIframe.src = convertirYoutubeEmbed(detalle.trailer) + '?autoplay=1&controls=1';
-          trailerIframe.style.display='block';
-        }else{
-          trailerSource.src = detalle.trailer;
-          trailerVideo.style.display='block';
-          trailerVideo.muted=false; trailerVideo.autoplay=true; trailerVideo.controls=true;
-          trailerVideo.load(); trailerVideo.play().catch(err=>console.warn('Autoplay bloqueado',err));
-        }
-      }
-      modal.style.display='flex';
-    })
-    .catch(err=>{console.error(err); alert('Error cargando la película');});
-}
-
-modalCerrar.addEventListener('click',()=>{limpiarTrailer(); modal.style.display='none';});
-modal.addEventListener('click', e=>{if(e.target===modal){limpiarTrailer(); modal.style.display='none';}});
-
-function crearPeliculaCard(p, mostrarFecha=false){
-  const div = document.createElement('div'); div.classList.add('pelicula'); div.title=p.titulo;
-  const img = document.createElement('img'); img.src=p.imagen||'https://via.placeholder.com/160x240?text=No+Image'; img.alt=p.titulo; div.appendChild(img);
-  const info=document.createElement('div'); info.classList.add('titulo-fecha');
-  const titulo=document.createElement('div'); titulo.textContent=p.titulo; info.appendChild(titulo);
-  if(mostrarFecha && p.fecha){const f=document.createElement('div'); f.textContent=`Visto el: ${p.fecha}`; f.style.fontSize='12px'; f.style.color='#ccc'; info.appendChild(f);}
-  div.appendChild(info);
-  div.addEventListener('dblclick',()=>abrirModal(p));
-  return div;
-}
-
-async function cargarFavoritos(){
-  try{
-    const res=await fetch(`/api/favoritos/${encodeURIComponent(usuario.nombre)}`);
-    if(!res.ok) throw 'Error cargando favoritos';
-    const data=await res.json();
-    favoritosContainer.innerHTML='';
-    if(data.length===0) {favoritosContainer.textContent='No tiene películas favoritas.'; return;}
-    data.forEach(f=>favoritosContainer.appendChild(crearPeliculaCard(f)));
-  }catch(err){console.error(err); favoritosContainer.textContent='No se pudieron cargar favoritos.';}
-}
-
-async function cargarHistorial(){
-  try{
-    const res=await fetch(`/api/historial/${encodeURIComponent(usuario.nombre)}`);
-    if(!res.ok) throw 'Error cargando historial';
-    const data=await res.json(); historialContainer.innerHTML='';
-    if(data.length===0) {historialContainer.textContent='No tiene historial de visualización.'; return;}
-    data.forEach(v=>historialContainer.appendChild(crearPeliculaCard(v,true)));
-  }catch(err){console.error(err); historialContainer.textContent='No se pudo cargar el historial.';}
-}
-
-async function cargarPeliculasPorGenero(){
-  try{
-    const res=await fetch('/api/movies');
-    if(!res.ok) throw 'Error cargando catálogo';
-    const data=await res.json(); peliculasPorGenero.innerHTML='';
-    const generosMap={};
-    data.forEach(p=>{
-      if(!generosMap[p.genero]) generosMap[p.genero]=[];
-      generosMap[p.genero].push(p);
-    });
-    for(const g in generosMap){
-      const sec=document.createElement('section');
-      const h=document.createElement('h2'); h.textContent=g; sec.appendChild(h);
-      const carr=document.createElement('div'); carr.classList.add('carrusel');
-      generosMap[g].forEach(peli=>carr.appendChild(crearPeliculaCard(peli)));
-      sec.appendChild(carr); peliculasPorGenero.appendChild(sec);
-    }
-    mensajeError.style.display='none';
-  }catch(err){console.error(err); mensajeError.style.display='block';}
-}
-
-function mostrarFavoritos(){seccionFavoritos.style.display='block'; seccionHistorial.style.display='none'; catalogoPeliculas.style.display='none';}
-function mostrarHistorial(){seccionFavoritos.style.display='none'; seccionHistorial.style.display='block'; catalogoPeliculas.style.display='none';}
-function mostrarCatalogo(){seccionFavoritos.style.display='none'; seccionHistorial.style.display='none'; catalogoPeliculas.style.display='block';}
-
-document.getElementById('btnCerrarSesion').addEventListener('click',()=>{sessionStorage.removeItem('usuario'); window.location.href='login.html';});
-document.getElementById('btnFavoritos').addEventListener('click',mostrarFavoritos);
-document.getElementById('btnHistorial').addEventListener('click',mostrarHistorial);
-document.getElementById('btnCatalogo').addEventListener('click',mostrarCatalogo);
-
-async function inicializar(){document.title=`JR-flix - Bienvenido ${usuario.nombre}`; await cargarPeliculasPorGenero(); await cargarFavoritos(); await cargarHistorial(); mostrarCatalogo();}
-inicializar();
-</script>
-
+  <script src="js/dashboard-user.js"></script>
 </body>
 </html>
