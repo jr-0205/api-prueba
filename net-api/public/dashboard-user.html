@@ -1,236 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FERCHISLAND - Dashboard</title>
-  <link rel="stylesheet" href="css/styles2.css">
-  <style>
-    /* Sidebar overlay estilo Netflix */
-    #sidebarUsuario {
-      position: fixed;
-      top: 0;
-      right: -350px;
-      width: 350px;
-      height: 100%;
-      background: #0D1B2A;
-      color: #F5F6F5;
-      transition: right 0.3s ease;
-      padding: 2rem 1rem;
-      z-index: 1001;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    #sidebarUsuario.active { right: 0; }
-    #overlaySidebar {
-      position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
-      background: rgba(0,0,0,0.5);
-      display:none;
-      z-index:1000;
-    }
-    #sidebarUsuario .user-profile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #sidebarUsuario .user-profile img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 2px solid #E8C547;
-      margin-bottom: 1rem;
-      object-fit: cover;
-    }
-    #sidebarUsuario .user-profile input {
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: none;
-    }
-    #sidebarUsuario .user-profile button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      background: #E8C547;
-      color: #1B263B;
-      font-weight: bold;
-      width: 100%;
-    }
-    #sidebarUsuario .close-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      font-size: 2rem;
-      background: none;
-      border: none;
-      color: #F5F6F5;
-      cursor: pointer;
-    }
-    /* Ajuste header usuario */
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-    .user-info img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid #E8C547;
-      object-fit: cover;
-    }
-
-    /* Modal película actualizado */
-    #modalContenido {
-      max-width: 90%;
-      max-height: 90%;
-      overflow-y: auto;
-      background: #0D1B2A;
-      color: #F5F6F5;
-      padding: 1rem;
-      border-radius: 8px;
-      border: 1px solid #E8C547;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    #trailerContainer {
-      width: 100%;
-      max-height: 65vh;
-    }
-
-    #trailerVideo, #trailerIframe {
-      width: 100%;
-      height: auto;
-      max-height: 65vh;
-      border-radius: 6px;
-      aspect-ratio: 16/9;
-    }
-
-    #descripcionBotonContainer {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    #sinopsis {
-      flex: 1;
-      font-size: 1rem;
-    }
-
-    #btnFavoritoModal {
-      font-size: 1.5rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #E8C547;
-      transition: transform 0.2s;
-    }
-
-    #btnFavoritoModal:hover {
-      transform: scale(1.2);
-    }
-
-    @media (max-width: 768px) {
-      #descripcionBotonContainer {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      #btnFavoritoModal {
-        align-self: flex-start;
-        margin-top: 0.5rem;
-      }
-    }
-  </style>
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Catálogo y favoritos del perfil Comet."><title>Comet · Catálogo</title><link rel="stylesheet" href="css/portal.css"></head>
 <body>
-  <header>
-    <div class="logo">FERCHISLAND</div>
-    <nav>
-      <a href="#" id="btnFavoritos">Favoritos</a>
-      <a href="#" id="btnHistorial">Historial</a>
-      <button id="btnCatalogo">Catálogo</button>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#"><span class="brand-mark">C</span> COMET</a>
+    <nav class="sidebar-nav" aria-label="Secciones">
+      <button class="nav-button active" data-view="home"><span class="nav-dot"></span>Inicio</button>
+      <button class="nav-button" data-view="favorites"><span class="nav-dot"></span>Mis favoritos</button>
+      <button class="nav-button" data-view="activity"><span class="nav-dot"></span>Mi actividad</button>
+      <button class="nav-button" data-view="profile"><span class="nav-dot"></span>Mi perfil</button>
     </nav>
-    <div class="user-info" id="btnUsuario">
-      <img id="imagenUsuario" src="https://via.placeholder.com/40x40?text=User" alt="Usuario">
-      <span id="nombreUsuario">Usuario</span>
-    </div>
-    <button id="btnCerrarSesion">Cerrar sesión</button>
-  </header>
-
-  <!-- Sidebar usuario -->
-  <aside id="sidebarUsuario">
-    <button id="cerrarSidebar" class="close-btn">&times;</button>
-    <div class="user-profile">
-      <img id="sidebarImagenUsuario" src="https://via.placeholder.com/80x80?text=User" alt="Usuario">
-      <h2 id="nombreUsuarioSidebar">Usuario</h2>
-      <label>Nombre</label>
-      <input type="text" id="inputNombre">
-      <label>Email</label>
-      <input type="email" id="inputEmail">
-      <label>Imagen URL</label>
-      <input type="text" id="inputImagen">
-      <button id="btnGuardarUsuario">Guardar</button>
-    </div>
+    <div class="sidebar-footer"><div class="profile-mini"><img class="avatar" id="miniAvatar" alt=""><div><strong id="miniName"></strong><small>Espectador</small></div></div><button id="logout" class="nav-button" type="button">Cerrar sesión</button></div>
   </aside>
-  <div id="overlaySidebar"></div>
-
-  <main>
-    <section id="seccionFavoritos">
-      <h2>Películas Favoritas</h2>
-      <div class="carrusel-container">
-        <button class="carrusel-nav prev" data-carrusel="favoritosContainer">&lt;</button>
-        <div class="carrusel" id="favoritosContainer"></div>
-        <button class="carrusel-nav next" data-carrusel="favoritosContainer">&gt;</button>
-      </div>
+  <main class="main-area">
+    <header class="topbar"><input id="search" class="search" type="search" placeholder="Buscar películas, géneros o años…" aria-label="Buscar catálogo"><div class="top-actions"><button class="icon-button" data-view="favorites" aria-label="Favoritos">♥</button><button class="icon-button" data-view="profile" aria-label="Perfil">●</button></div></header>
+    <section id="view-home" class="view active">
+      <article id="hero" class="hero"><div class="hero-content"><span class="eyebrow">Selección Comet</span><h1 id="heroTitle">Cargando catálogo…</h1><p id="heroCopy">Estamos preparando tu experiencia.</p><div class="hero-actions"><button id="heroTrailer" class="button" type="button">▶ Reproducir tráiler</button><button id="heroFavorite" class="button secondary" type="button">Agregar a favoritos</button><button class="button secondary" data-scroll-catalog type="button">Ver catálogo</button></div></div></article>
+      <section class="section" id="catalog"><div class="section-head"><div><span class="eyebrow">Explorar</span><h2>Películas disponibles</h2></div><span id="catalogCount" class="muted"></span></div><div id="movieGrid" class="media-grid"></div></section>
     </section>
-
-    <section id="seccionHistorial">
-      <h2>Historial de Visualización</h2>
-      <div class="carrusel-container">
-        <button class="carrusel-nav prev" data-carrusel="historialContainer">&lt;</button>
-        <div class="carrusel" id="historialContainer"></div>
-        <button class="carrusel-nav next" data-carrusel="historialContainer">&gt;</button>
-      </div>
-    </section>
-
-    <section id="catalogoPeliculas">
-      <div id="peliculasPorGenero"></div>
-    </section>
-
-    <div id="mensaje-error" style="display:none;"></div>
+    <section id="view-favorites" class="view"><div class="section-head"><div><span class="eyebrow">Tu biblioteca</span><h1>Mis favoritos</h1></div></div><div id="favoriteGrid" class="media-grid"></div></section>
+    <section id="view-activity" class="view"><div class="section-head"><div><span class="eyebrow">Tu recorrido</span><h1>Mi actividad</h1></div></div><section class="section"><div class="section-head"><div><h2>Seguir viendo</h2><p class="muted">Actualiza el avance o marca una película como terminada.</p></div></div><div id="progressGrid" class="media-grid"></div></section><section class="section"><div class="section-head"><div><h2>Historial</h2><p class="muted">Películas terminadas o marcadas como vistas.</p></div><button id="clearHistory" class="button secondary" type="button">Limpiar historial</button></div><div id="historyGrid" class="media-grid"></div></section></section>
+    <section id="view-profile" class="view"><div class="section-head"><div><span class="eyebrow">Cuenta</span><h1>Editar perfil</h1></div></div><div class="surface profile-grid"><div class="profile-visual"><img id="profileAvatar" class="avatar" alt=""><strong id="profileRole" class="role-badge">Espectador</strong></div><div class="profile-forms"><form id="profileForm" class="form-grid"><h2>Información personal</h2><label class="field"><span>Nombre</span><input name="nombre" autocomplete="name" minlength="2" maxlength="80" required></label><label class="field"><span>Correo</span><input name="correo" type="email" autocomplete="email" maxlength="254" required></label><fieldset class="avatar-picker"><legend>Elige una foto aprobada</legend><p class="muted">El administrador controla las imágenes disponibles; no se permiten archivos ni enlaces personales.</p><div id="avatarChoices" class="avatar-choice-grid"></div></fieldset><div class="form-actions"><button class="button" type="submit">Guardar cambios</button></div><p id="profileMessage" class="message" role="status" aria-live="polite"></p></form><form id="passwordForm" class="form-grid account-subform"><h2>Seguridad</h2><p class="muted">La nueva contraseña debe tener al menos ocho caracteres, una letra y un número.</p><label class="field"><span>Contraseña actual</span><input name="contraseñaActual" type="password" autocomplete="current-password" maxlength="128" required></label><label class="field"><span>Nueva contraseña</span><input name="contraseñaNueva" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><label class="field"><span>Confirmar nueva contraseña</span><input name="confirmacion" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><div class="form-actions"><button class="button secondary" type="submit">Cambiar contraseña</button></div><p id="passwordMessage" class="message" role="status" aria-live="polite"></p></form></div></div></section>
   </main>
-
-  <!-- Modal de película -->
-  <div id="modalPelicula" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" style="display:none;">
-    <div id="modalContenido">
-      <button id="modalCerrar" aria-label="Cerrar ventana">&times;</button>
-      <h3 id="modalTitulo"></h3>
-
-      <div id="trailerContainer">
-        <video id="trailerVideo" autoplay muted preload="auto" controls style="display:none;">
-          <source src="" type="video/mp4"/>
-        </video>
-        <iframe id="trailerIframe" frameborder="0" allowfullscreen allow="autoplay" style="display:none;"></iframe>
-      </div>
-
-      <div id="descripcionBotonContainer">
-        <p id="sinopsis">Sin sinopsis disponible.</p>
-        <button id="btnFavoritoModal">☆</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="js/dashboard-user.js"></script>
-</body>
-</html>
+</div>
+<dialog id="progressDialog" class="modal"><form id="progressForm" method="dialog" class="form-grid"><input type="hidden" name="peliculaId"><span class="eyebrow">Seguir viendo</span><h2 id="progressTitle">Actualizar progreso</h2><label class="field"><span>Progreso: <output id="progressValue">25%</output></span><input name="progreso" type="range" min="0" max="100" step="5" value="25"></label><p class="muted">Al llegar a 100%, la película pasará al historial.</p><div class="form-actions"><button class="button" value="save" type="submit">Guardar</button><button class="button secondary" value="cancel" type="button" data-close-progress>Cancelar</button></div><p id="progressMessage" class="message" role="status"></p></form></dialog>
+<dialog id="trailerDialog" class="trailer-dialog" aria-labelledby="trailerTitle">
+  <article class="trailer-page">
+    <header class="trailer-header"><div><span class="eyebrow">Reproduciendo en Comet</span><h2 id="trailerTitle">Tráiler</h2></div><button class="trailer-close" type="button" data-close-trailer aria-label="Cerrar reproductor">×</button></header>
+    <div class="trailer-screen"><iframe id="trailerFrame" title="Reproductor de tráiler" src="" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><div id="trailerUnavailable" class="trailer-empty" hidden><strong>Tráiler no disponible</strong><p>Esta película todavía no tiene un enlace compatible de YouTube.</p></div></div>
+    <div class="trailer-details"><div><span id="trailerMeta" class="eyebrow"></span><p id="trailerSynopsis" class="muted"></p></div><p class="trailer-help">Puedes cerrar con Esc. El video se reproduce aquí sin abrir YouTube.</p></div>
+  </article>
+</dialog>
+<script src="js/theme-settings.js"></script><script src="js/youtube-player.js"></script><script src="js/dashboard-user.js"></script>
+</body></html>

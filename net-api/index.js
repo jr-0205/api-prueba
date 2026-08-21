@@ -1,40 +1,27 @@
-// index.js
-
-const express = require('express');
-const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const config = require('./config');
+const { createApp } = require('./app');
+const { bootstrapDatabase } = require('./lib/bootstrap-db');
 
-const app = express();
-const PORT = 3000;
-
-// Middleware
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Conexión única a SQLite
-const dbPath = path.join(__dirname, 'db', 'database.db');
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(config.databasePath, async (err) => {
     if (err) {
-        console.error('❌ Error conectando a la DB:', err.message);
+        console.error('No fue posible conectar con SQLite:', err.message);
+        process.exitCode = 1;
     } else {
-        console.log('✅ DB conectada en', dbPath);
+        try {
+            await bootstrapDatabase(db);
+        } catch (bootstrapError) {
+            console.error('No fue posible preparar la base de datos:', bootstrapError.message);
+            process.exitCode = 1;
+            db.close();
+            return;
+        }
+        const app = createApp(db);
+        const server = app.listen(config.port, () => {
+            console.log(`Comet Movies API Beta disponible en http://localhost:${config.port}`);
+        });
+        const shutdown = () => server.close(() => db.close());
+        process.once('SIGINT', shutdown);
+        process.once('SIGTERM', shutdown);
     }
-});
-
-// Middleware para inyectar db en todas las rutas
-app.use((req, res, next) => {
-    req.db = db;
-    next();
-});
-
-// Rutas modularizadas
-app.use('/api/movies', require('./routes/movies')); // Películas
-app.use('/api/users', require('./routes/users'));   // Usuarios
-app.use('/api/login', require('./routes/login'));   // Login
-app.use('/api/register', require('./routes/register')); // Registro
-app.use('/api/favoritos', require('./routes/favoritos')); // 👈 FAVORITOS
-
-// Arrancar servidor
-app.listen(PORT, () => {
-    console.log(`🚀 API corriendo en http://localhost:${PORT}`);
 });

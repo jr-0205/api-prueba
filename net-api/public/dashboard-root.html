@@ -1,56 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Netflix Clone</title>
-    <link rel="stylesheet" href="css/styles2.css">
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Panel administrativo Comet para usuarios, roles y catálogo."><title>Comet · Administración</title><link rel="stylesheet" href="css/portal.css"></head>
 <body>
-    <main class="container" role="main">
-        <header>
-            <h1>Panel de Administración</h1>
-            <button id="logoutBtn" class="btn" aria-label="Cerrar sesión">Cerrar Sesión</button>
-        </header>
-
-        <section aria-labelledby="addMovieSection">
-            <h2 id="addMovieSection">Gestión de Películas</h2>
-            <form id="addMovieForm" aria-describedby="formInstructions">
-                <div class="form-group">
-                    <label for="title">Título:</label>
-                    <input type="text" id="title" name="title" placeholder="Título" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">Descripción:</label>
-                    <input type="text" id="description" name="description" placeholder="Descripción">
-                </div>
-                <div class="form-group">
-                    <label for="genre">Género:</label>
-                    <input type="text" id="genre" name="genre" placeholder="Género">
-                </div>
-                <div class="form-group">
-                    <label for="release_year">Año:</label>
-                    <input type="number" id="release_year" name="release_year" placeholder="Año" required>
-                </div>
-                <div class="form-group">
-                    <label for="rating">Rating:</label>
-                    <input type="number" id="rating" name="rating" step="0.1" placeholder="Rating" min="0" max="10">
-                </div>
-                <div class="form-group">
-                    <label for="image">Imagen:</label>
-                    <input type="file" id="image" name="image" accept="image/*">
-                </div>
-                <button type="submit" class="btn" aria-label="Agregar película">Agregar Película</button>
-            </form>
-            <p id="formInstructions" class="instructions">Todos los campos son opcionales excepto Título y Año.</p>
-        </section>
-
-        <section aria-labelledby="moviesListSection">
-            <h2 id="moviesListSection">Lista de Películas</h2>
-            <ul id="moviesList" class="movies-list" role="list"></ul>
-        </section>
-    </main>
-
-    <script src="js/app.js"></script>
-</body>
-</html>
+<div class="app-shell">
+  <aside class="sidebar"><a class="brand" href="#"><span class="brand-mark">C</span> COMET</a><nav class="sidebar-nav"><button class="nav-button active" data-view="overview"><span class="nav-dot"></span>Resumen</button><button class="nav-button" data-view="movies"><span class="nav-dot"></span>Catálogo</button><button class="nav-button" data-view="genres"><span class="nav-dot"></span>Géneros</button><button class="nav-button" data-view="settings"><span class="nav-dot"></span>Apariencia</button><button class="nav-button" data-view="avatars"><span class="nav-dot"></span>Avatares</button><button class="nav-button" data-view="users"><span class="nav-dot"></span>Usuarios y roles</button></nav><div class="sidebar-footer"><div class="profile-mini"><img id="adminAvatar" class="avatar" alt=""><div><strong id="adminName">Administrador</strong><small>Control total</small></div></div><button id="logout" class="nav-button">Cerrar sesión</button></div></aside>
+  <main class="main-area">
+    <header class="topbar"><div><span class="eyebrow">Centro de control</span><strong style="display:block;font-size:1.3rem">Administración Comet</strong></div><div class="top-actions"><span class="role-badge">ADMIN</span></div></header>
+    <section id="view-overview" class="view active">
+      <article class="hero admin-hero"><div class="hero-content"><span class="eyebrow">Beta operativa</span><h1>Contenido y acceso bajo control.</h1><p>Administra el catálogo, revisa perfiles y asigna roles con validación del lado del servidor.</p><div class="hero-actions"><button class="button" data-view="movies">Gestionar catálogo</button><button class="button secondary" data-view="settings">Cambiar apariencia</button></div></div></article>
+      <div class="section media-grid"><div class="surface"><span class="eyebrow">Catálogo</span><h2 id="movieMetric">—</h2><p class="muted">películas registradas</p></div><div class="surface"><span class="eyebrow">Clasificación</span><h2 id="genreMetric">—</h2><p class="muted">géneros disponibles</p></div><div class="surface"><span class="eyebrow">Comunidad</span><h2 id="userMetric">—</h2><p class="muted">usuarios activos</p></div></div>
+    </section>
+    <section id="view-movies" class="view"><div class="section-head"><div><span class="eyebrow">Catálogo</span><h1>Editar películas</h1></div></div><div class="admin-grid">
+      <form id="movieForm" class="surface form-grid"><input type="hidden" name="id"><h2 id="movieFormTitle">Nueva película</h2><label class="field"><span>Título</span><input name="titulo" maxlength="160" required></label><label class="field"><span>Año</span><input name="anio" type="number" min="1888" max="2031" required></label><label class="field"><span>Duración</span><input name="duracion" maxlength="40" placeholder="1h 48m"></label><label class="field"><span>Género</span><select name="generoId"><option value="">Sin género</option></select></label><label class="field"><span>Imagen vertical · tarjetas</span><input name="imagenVertical" type="url" inputmode="url" maxlength="1000" placeholder="https://…/poster-vertical.jpg"><small>Recomendado: proporción 4:5 o 2:3.</small></label><label class="field"><span>Imagen horizontal · carrusel</span><input name="imagenHorizontal" type="url" inputmode="url" maxlength="1000" placeholder="https://…/fondo-horizontal.jpg"><small>Recomendado: proporción 16:9.</small></label><label class="field"><span>Tráiler de YouTube</span><input name="trailer" type="url" inputmode="url" maxlength="1000" placeholder="https://youtu.be/…"><small>Acepta enlaces watch, youtu.be, embed, shorts o live.</small></label><label class="field"><span>Sinopsis</span><textarea name="sinopsis" rows="4" maxlength="2000"></textarea></label><div class="form-actions"><button class="button" type="submit">Guardar</button><button id="cancelMovie" class="button secondary" type="button">Limpiar</button></div><p id="movieMessage" class="message" role="status"></p></form>
+      <div><div id="adminMovieGrid" class="media-grid"></div></div>
+    </div></section>
+    <section id="view-genres" class="view"><div class="section-head"><div><span class="eyebrow">Clasificación</span><h1>Administrar géneros</h1></div></div><div class="admin-grid"><form id="genreForm" class="surface form-grid"><input type="hidden" name="id"><h2 id="genreFormTitle">Nuevo género</h2><label class="field"><span>Nombre</span><input name="nombre" minlength="2" maxlength="60" required></label><div class="form-actions"><button class="button" type="submit">Guardar</button><button id="cancelGenre" class="button secondary" type="button">Limpiar</button></div><p id="genreMessage" class="message" role="status"></p></form><div class="surface table-wrap"><table class="data-table"><thead><tr><th>Género</th><th>Películas</th><th>Acciones</th></tr></thead><tbody id="genreRows"></tbody></table></div></div></section>
+    <section id="view-settings" class="view"><div class="section-head"><div><span class="eyebrow">Contenido visual</span><h1>Enlaces y fondos</h1><p class="muted">Actualiza las imágenes utilizadas por las páginas sin modificar HTML, CSS o JavaScript.</p></div></div><div id="settingsGrid" class="settings-grid"></div><p id="settingsMessage" class="message" role="status" aria-live="polite"></p></section>
+    <section id="view-avatars" class="view"><div class="section-head"><div><span class="eyebrow">Perfiles aprobados</span><h1>Catálogo de avatares</h1><p class="muted">Sólo estas imágenes pueden ser elegidas por los usuarios.</p></div></div><div class="admin-grid"><form id="avatarForm" class="surface form-grid"><input type="hidden" name="id"><h2 id="avatarFormTitle">Nuevo avatar</h2><label class="field"><span>Nombre</span><input name="nombre" minlength="2" maxlength="60" required></label><label class="field"><span>URL de imagen</span><input name="url" type="url" inputmode="url" maxlength="1000" required></label><label class="check-field"><input name="activo" type="checkbox" checked><span>Disponible para usuarios</span></label><div class="form-actions"><button class="button" type="submit">Guardar avatar</button><button id="cancelAvatar" class="button secondary" type="button">Limpiar</button></div><p id="avatarMessage" class="message" role="status" aria-live="polite"></p></form><div id="adminAvatarGrid" class="avatar-admin-grid"></div></div></section>
+    <section id="view-users" class="view"><div class="section-head"><div><span class="eyebrow">Acceso</span><h1>Usuarios y roles</h1></div></div><div class="surface table-wrap"><table class="data-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Acción</th></tr></thead><tbody id="userRows"></tbody></table></div></section>
+  </main>
+</div><script src="js/theme-settings.js"></script><script src="js/dashboard-admin.js"></script>
+</body></html>

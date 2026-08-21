@@ -1,68 +1,100 @@
-// routes/favoritos.js
-const express = require("express");
+const express = require('express');
+
+const { requireSelfOrAdmin } = require('../middleware/auth');
+const { parsePositiveInteger } = require('../lib/validation');
+
 const router = express.Router();
-const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./db/database.db");
+const selectFavorites = `
+  SELECT p.id, p.titulo, p.anio, p.duracion,
+         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_vertical,
+         COALESCE(NULLIF(p.imagen_horizontal, ''), NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_horizontal,
+         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen,
+         p.sinopsis, p.trailer, g.nombre AS genero
+  FROM peliculas p
+  INNER JOIN favoritos f ON f.pelicula_id = p.id
+  LEFT JOIN generos g ON p.genero_id = g.id
+  WHERE f.usuario_id = ?
+  ORDER BY p.titulo COLLATE NOCASE`;
 
-// Obtener favoritos de un usuario
-router.get("/:usuarioId", (req, res) => {
-  const { usuarioId } = req.params;
-  const query = `
-    SELECT p.id, p.titulo, p.imagen, p.sinopsis, p.trailer, p.genero
-    FROM peliculas p
-    INNER JOIN favoritos f ON f.pelicula_id = p.id
-    WHERE f.usuario_id = ?
-  `;
-  db.all(query, [usuarioId], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+function listFavorites(req, res, next, usuarioId) {
+  req.db.all(selectFavorites, [usuarioId], (error, rows) => {
+    if (error) return next(error);
+    return res.json(rows);
   });
+}
+
+function relationIds(req, res, next, usuarioParam, movieParam, action) {
+  const usuarioId = parsePositiveInteger(usuarioParam);
+  const peliculaId = parsePositiveInteger(movieParam);
+  if (!usuarioId || !peliculaId) {
+    res.status(400).json({ error: 'IDs de usuario o película inválidos.' });
+    return null;
+  }
+  req.db.get('SELECT id FROM usuarios WHERE id = ?', [usuarioId], (userError, user) => {
+    if (userError) return next(userError);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    req.db.get('SELECT id FROM peliculas WHERE id = ?', [peliculaId], (movieError, movie) => {
+      if (movieError) return next(movieError);
+      if (!movie) return res.status(404).json({ error: 'Película no encontrada.' });
+      return action(usuarioId, peliculaId);
+    });
+  });
+  return true;
+}
+
+router.get('/:usuarioId', requireSelfOrAdmin('usuarioId'), (req, res, next) => {
+  const usuarioId = parsePositiveInteger(req.params.usuarioId);
+  if (!usuarioId) return res.status(400).json({ error: 'ID de usuario inválido.' });
+  return listFavorites(req, res, next, usuarioId);
 });
 
-// Marcar o desmarcar favorito
-router.post("/:usuarioId", (req, res) => {
-  const { usuarioId } = req.params;
-  const { peliculaId } = req.body;
+router.put('/:usuarioId/:peliculaId', requireSelfOrAdmin('usuarioId'), (req, res, next) => relationIds(
+  req,
+  res,
+  next,
+  req.params.usuarioId,
+  req.params.peliculaId,
+  (usuarioId, peliculaId) => {
+    req.db.run('INSERT OR IGNORE INTO favoritos (usuario_id, pelicula_id) VALUES (?, ?)', [usuarioId, peliculaId], (error) => {
+      if (error) return next(error);
+      return listFavorites(req, res, next, usuarioId);
+    });
+  },
+));
 
-  // Verificar si ya está en favoritos
-  const checkQuery = "SELECT id FROM favoritos WHERE usuario_id = ? AND pelicula_id = ?";
-  db.get(checkQuery, [usuarioId, peliculaId], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
+router.delete('/:usuarioId/:peliculaId', requireSelfOrAdmin('usuarioId'), (req, res, next) => relationIds(
+  req,
+  res,
+  next,
+  req.params.usuarioId,
+  req.params.peliculaId,
+  (usuarioId, peliculaId) => {
+    req.db.run('DELETE FROM favoritos WHERE usuario_id = ? AND pelicula_id = ?', [usuarioId, peliculaId], function onDelete(error) {
+      if (error) return next(error);
+      if (this.changes === 0) return res.status(404).json({ error: 'La película no estaba en favoritos.' });
+      return res.status(204).end();
+    });
+  },
+));
 
-    if (row) {
-      // Ya está, lo eliminamos (desmarcar)
-      const deleteQuery = "DELETE FROM favoritos WHERE id = ?";
-      db.run(deleteQuery, [row.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        // Devolver lista actualizada
-        db.all(`
-          SELECT p.id, p.titulo, p.imagen, p.sinopsis, p.trailer, p.genero
-          FROM peliculas p
-          INNER JOIN favoritos f ON f.pelicula_id = p.id
-          WHERE f.usuario_id = ?
-        `, [usuarioId], (err, rows) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json(rows);
-        });
+// Compatibilidad con clientes anteriores: POST conserva la operación de alternar.
+router.post('/:usuarioId', requireSelfOrAdmin('usuarioId'), (req, res, next) => relationIds(
+  req,
+  res,
+  next,
+  req.params.usuarioId,
+  req.body.peliculaId,
+  (usuarioId, peliculaId) => {
+    req.db.get('SELECT id FROM favoritos WHERE usuario_id = ? AND pelicula_id = ?', [usuarioId, peliculaId], (checkError, row) => {
+      if (checkError) return next(checkError);
+      const query = row ? 'DELETE FROM favoritos WHERE id = ?' : 'INSERT INTO favoritos (usuario_id, pelicula_id) VALUES (?, ?)';
+      const params = row ? [row.id] : [usuarioId, peliculaId];
+      req.db.run(query, params, (writeError) => {
+        if (writeError) return next(writeError);
+        return listFavorites(req, res, next, usuarioId);
       });
-    } else {
-      // No está, lo agregamos (marcar)
-      const insertQuery = "INSERT INTO favoritos (usuario_id, pelicula_id) VALUES (?, ?)";
-      db.run(insertQuery, [usuarioId, peliculaId], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        // Devolver lista actualizada
-        db.all(`
-          SELECT p.id, p.titulo, p.imagen, p.sinopsis, p.trailer, p.genero
-          FROM peliculas p
-          INNER JOIN favoritos f ON f.pelicula_id = p.id
-          WHERE f.usuario_id = ?
-        `, [usuarioId], (err, rows) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.json(rows);
-        });
-      });
-    }
-  });
-});
+    });
+  },
+));
 
 module.exports = router;

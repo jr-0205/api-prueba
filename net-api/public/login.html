@@ -1,59 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar sesión - Comet</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Acceso a Comet, catálogo audiovisual beta con roles y perfiles.">
+  <title>Comet · Acceso beta</title><link rel="stylesheet" href="css/portal.css">
 </head>
-<body>
-  <div class="container">
-    <div class="login-panel">
-      <h1>Iniciar sesión</h1>
-
-      <form id="loginForm" aria-label="Formulario de inicio de sesión">
-        
-        <label for="username" class="sr-only">Correo electrónico</label>
-        <input 
-          type="text" 
-          id="username" 
-          name="username" 
-          placeholder="Correo electrónico" 
-          class="input-field" 
-          required 
-          aria-required="true" 
-          autocomplete="username">
-
-        <label for="password" class="sr-only">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          placeholder="Contraseña" 
-          class="input-field" 
-          required 
-          aria-required="true" 
-          autocomplete="current-password">
-        
-
-        <button type="submit" class="sign-in-btn" aria-label="Iniciar sesión">Entrar</button>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-visual" aria-label="Presentación de Comet">
+      <div class="auth-copy"><span class="eyebrow">Experiencia beta</span><h1>Tu catálogo.<br>Tu espacio.</h1><p>Explora el contenido, organiza favoritos y administra tu perfil desde una interfaz inspirada en los grandes launchers de entretenimiento.</p></div>
+    </section>
+    <section class="auth-card">
+      <a class="brand" href="index.html"><span class="brand-mark">C</span> COMET</a>
+      <span class="eyebrow" style="margin-top:38px">Bienvenido</span><h2>Inicia sesión</h2><p class="muted">El sistema abrirá el panel permitido por tu rol.</p>
+      <form id="loginForm" class="form-grid" novalidate>
+        <label class="field"><span>Correo electrónico</span><input name="correo" type="email" autocomplete="username" maxlength="254" required></label>
+        <label class="field"><span>Contraseña</span><input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
+        <button class="button" type="submit">Entrar a Comet</button>
       </form>
-
-      <!-- 👇 Aquí se mostrarán mensajes de error o éxito -->
-      <p id="message" style="color: #ff4444; margin-top: 10px;"></p>
-
-      <p class="signup-link">
-        ¿No tienes una cuenta? 
-        <a href="register.html" aria-label="Registrarse">Regístrate</a>
-      </p>
-    </div>
-
-    <div class="image-panel">
-      <img src="https://i.pinimg.com/originals/b4/ba/75/b4ba75f4371e5077d83bd0613f9929cb.jpg" alt="Imagen decorativa" class="background-image">
-      <h2 class="comet-logo">comet</h2>
-    </div>
-  </div>
-  
-  <script src="js/app.js"></script>
-</body>
-</html>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+      <div class="demo-panel public-demo"><h3>Accesos públicos de prueba</h3><p class="public-demo-note">Credenciales ficticias expuestas intencionalmente. No contienen información real.</p>
+        <div class="demo-row"><div><strong>Administrador</strong><small>admin@comet.demo · Admin2026!</small></div><button class="demo-use" type="button" data-demo-email="admin@comet.demo" data-demo-password="Admin2026!" data-demo-submit>Entrar como admin</button></div>
+        <div class="demo-row"><div><strong>Espectador</strong><small>viewer@comet.demo · Viewer2026!</small></div><button class="demo-use" type="button" data-demo-email="viewer@comet.demo" data-demo-password="Viewer2026!" data-demo-submit>Entrar como espectador</button></div>
+      </div>
+      <p class="auth-link">¿Quieres tu propio perfil? <a href="register.html">Crear cuenta</a></p>
+    </section>
+  </main>
+  <script src="js/theme-settings.js"></script><script src="js/app.js"></script>
+</body></html>

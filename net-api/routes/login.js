@@ -1,39 +1,42 @@
-// routes/login.js
 const express = require('express');
+
+const config = require('../config');
+const { hashPassword, signToken, verifyPassword } = require('../lib/security');
+const { validateLogin } = require('../lib/validation');
+
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
-// Aseguramos la ruta absoluta a la base de datos
-const dbPath = path.join(__dirname, '..', 'db', 'database.db');
-const db = new sqlite3.Database(dbPath);
+router.post('/', (req, res, next) => {
+  const validation = validateLogin(req.body);
+  if (!validation.valid) return res.status(400).json({ error: 'Datos de acceso inválidos.', details: validation.errors });
+  const { correo, password } = validation.value;
 
-router.post('/', (req, res) => {
-    const { correo, contraseña } = req.body;
+  const query = `SELECT u.id, u.nombre, u.correo, u.avatar_id,
+    COALESCE(a.url, u.imagen) AS imagen, a.nombre AS avatar_nombre, u.rol, u.contraseña
+    FROM usuarios u LEFT JOIN avatares a ON a.id = u.avatar_id
+    WHERE LOWER(u.correo) = ?`;
+  req.db.get(query, [correo], async (error, usuario) => {
+    if (error) return next(error);
+    try {
+      if (!usuario || !await verifyPassword(password, usuario.contraseña)) {
+        return res.status(401).json({ error: 'Credenciales incorrectas.' });
+      }
 
-    if (!correo || !contraseña) {
-        return res.status(400).json({ error: 'Faltan datos' });
+      if (!usuario.contraseña.startsWith('scrypt:')) {
+        const upgradedHash = await hashPassword(password);
+        req.db.run('UPDATE usuarios SET contraseña = ? WHERE id = ?', [upgradedHash, usuario.id]);
+      }
+
+      delete usuario.contraseña;
+      return res.json({
+        message: 'Login exitoso',
+        usuario,
+        token: signToken({ id: usuario.id, rol: usuario.rol || 'user' }, config.authSecret),
+      });
+    } catch (authError) {
+      return next(authError);
     }
-
-    const query = `SELECT id, nombre, correo, imagen, rol 
-                   FROM usuarios 
-                   WHERE correo = ? AND contraseña = ?`;
-
-    db.get(query, [correo, contraseña], (err, usuario) => {
-        if (err) {
-            console.error('Error en la consulta:', err.message);
-            return res.status(500).json({ error: 'Error en el servidor' });
-        }
-
-        if (!usuario) {
-            return res.status(401).json({ error: 'Credenciales incorrectas' });
-        }
-
-        res.json({
-            message: 'Login exitoso',
-            usuario
-        });
-    });
+  });
 });
 
 module.exports = router;
