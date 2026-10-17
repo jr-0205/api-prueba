@@ -82,6 +82,17 @@ async function bootstrapDatabase(db) {
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (pelicula_id) REFERENCES peliculas(id)
   )`);
+  await run(db, `CREATE TABLE IF NOT EXISTS sesiones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER NOT NULL,
+    jti TEXT NOT NULL UNIQUE,
+    creado_en TEXT DEFAULT (DATETIME('now')),
+    ultimo_uso TEXT DEFAULT (DATETIME('now')),
+    expira_en TEXT,
+    user_agent TEXT,
+    ip TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+  )`);
   await run(db, `CREATE TABLE IF NOT EXISTS configuracion_visual (
     clave TEXT PRIMARY KEY,
     valor TEXT NOT NULL,
@@ -93,6 +104,8 @@ async function bootstrapDatabase(db) {
   await run(db, 'CREATE INDEX IF NOT EXISTS idx_peliculas_genero_id ON peliculas(genero_id)');
   await run(db, 'CREATE INDEX IF NOT EXISTS idx_historial_usuario_fecha ON historial(usuario_id, fecha DESC)');
   await run(db, 'CREATE INDEX IF NOT EXISTS idx_seguir_viendo_usuario ON seguir_viendo(usuario_id, fecha_actualizacion DESC)');
+  await run(db, 'CREATE INDEX IF NOT EXISTS idx_sesiones_usuario_id ON sesiones(usuario_id, creado_en DESC)');
+  await run(db, 'CREATE INDEX IF NOT EXISTS idx_sesiones_jti ON sesiones(jti)');
 
   for (const [key, setting] of Object.entries(VISUAL_SETTINGS)) {
     await run(

@@ -1,16 +1,27 @@
 const config = require('../config');
 const { verifyToken } = require('../lib/security');
+const { findActiveSession, touchSession } = require('../lib/sessions');
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const [scheme, token] = String(req.headers.authorization || '').split(' ');
-  const user = scheme === 'Bearer' ? verifyToken(token, config.authSecret) : null;
-  if (!user) return res.status(401).json({ error: 'Autenticación requerida.' });
-  req.db.get('SELECT id, rol FROM usuarios WHERE id = ?', [user.id], (error, current) => {
-    if (error) return next(error);
-    if (!current) return res.status(401).json({ error: 'La cuenta asociada al token ya no existe.' });
-    req.user = { ...user, rol: current.rol || 'user' };
-    return next();
-  });
+  const payload = scheme === 'Bearer' ? verifyToken(token, config.authSecret) : null;
+  if (!payload?.jti) return res.status(401).json({ error: 'Autenticación requerida.' });
+  try {
+    const session = await findActiveSession(req.db, payload.jti);
+    if (!session || String(session.usuario_id) !== String(payload.id)) {
+      return res.status(401).json({ error: 'La sesión no está activa o fue cerrada.' });
+    }
+    req.db.get('SELECT id, rol FROM usuarios WHERE id = ?', [payload.id], (error, current) => {
+      if (error) return next(error);
+      if (!current) return res.status(401).json({ error: 'La cuenta asociada al token ya no existe.' });
+      req.user = { ...payload, rol: current.rol || 'user' };
+      req.sessionId = payload.jti;
+      touchSession(req.db, payload.jti).catch(() => {});
+      return next();
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 function requireSelfOrAdmin(paramName = 'id') {

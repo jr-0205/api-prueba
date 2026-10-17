@@ -37,6 +37,7 @@ function createApp(db) {
   app.use('/api/genres', require('./routes/genres'));
   app.use('/api/movies', require('./routes/movies'));
   app.use('/api/login', createRateLimit({ max: 10 }), require('./routes/login'));
+  app.use('/api/logout', requireAuth, require('./routes/logout'));
   app.use('/api/register', createRateLimit({ max: 5 }), require('./routes/register'));
   app.use('/api/users', requireAuth, require('./routes/users'));
   app.use('/api/favoritos', requireAuth, require('./routes/favoritos'));

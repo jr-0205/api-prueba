@@ -8,6 +8,14 @@ function parsePort(value) {
   return port;
 }
 
+function parseMaxSessions(value) {
+  const max = Number(value || 3);
+  if (!Number.isInteger(max) || max < 1 || max > 100) {
+    throw new Error('MAX_SESSIONS_PER_USER debe ser un entero entre 1 y 100.');
+  }
+  return max;
+}
+
 const isProduction = process.env.NODE_ENV === 'production';
 const authSecret = process.env.AUTH_SECRET || 'solo-desarrollo-cambia-esta-clave-beta';
 
@@ -21,6 +29,8 @@ module.exports = Object.freeze({
   authSecret,
   databasePath: path.resolve(__dirname, process.env.DATABASE_PATH || 'db/database.db'),
   isProduction,
+  sessionTtlSeconds: 60 * 60,
+  maxSessionsPerUser: parseMaxSessions(process.env.MAX_SESSIONS_PER_USER),
   enableDemoUsers: !isProduction && process.env.ENABLE_DEMO_USERS !== 'false',
   demoUsers: [
     {

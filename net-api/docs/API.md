@@ -7,9 +7,12 @@ Base local: `http://localhost:3000/api`. Las rutas protegidas reciben `Authoriza
 | Método y ruta | Acceso | Cuerpo principal |
 |---|---|---|
 | `POST /register` | Público | `nombre`, `correo`, `contraseña`; asigna el primer avatar activo. |
-| `POST /login` | Público | `correo`, `contraseña`. |
+| `POST /login` | Público | `correo`, `contraseña`; abre una sesión y devuelve el `token` con su `expira_en`. |
+| `POST /logout` | Sesión | Revoca la sesión del token actual. |
 
 Una contraseña nueva debe contener entre 8 y 128 caracteres, al menos una letra y un número. El correo se normaliza a minúsculas.
+
+Cada `login` abre una sesión identificada por un `jti` firmado dentro del token. El servidor guarda las sesiones en la tabla `sesiones` y valida el `jti` en cada petición protegida, por lo que un `logout`, un límite de sesiones o una revocación invalidan el token de inmediato. Se permiten como máximo `MAX_SESSIONS_PER_USER` sesiones simultáneas por usuario (3 por defecto); al superarlo se revocan las más antiguas. Los `jti` caducados se depuran al iniciar sesión.
 
 ## Usuarios
 
@@ -47,7 +50,7 @@ El arranque incluye seis opciones beta. Un avatar asignado puede desactivarse pa
 
 Las películas validan título, año, duración, sinopsis, URLs y existencia del género. `imagenVertical` se usa en tarjetas generales (recomendado 4:5 o 2:3) e `imagenHorizontal` en carruseles y destacados (recomendado 16:9). Las respuestas exponen `imagen_vertical` e `imagen_horizontal`; `imagen` permanece como alias de la portada vertical para clientes anteriores. Solo se admiten enlaces HTTP/HTTPS.
 
-El campo `trailer` acepta enlaces de YouTube en formatos `watch?v=`, `youtu.be`, `embed`, `shorts` y `live`. El frontend los transforma a `youtube-nocookie.com/embed` y los reproduce dentro de Comet al hacer doble clic sobre una tarjeta.
+El campo `trailer` acepta enlaces de YouTube en formatos `watch?v=`, `youtu.be`, `embed`, `shorts` y `live`. El frontend los transforma a `youtube-nocookie.com/embed` y los reproduce dentro de Comet: al seleccionar una tarjeta se abre la pantalla de detalle y desde ahí el botón "Reproducir" abre el reproductor a pantalla completa.
 
 Al eliminar una película se limpian sus favoritos. Un género con películas asociadas no puede eliminarse.
 

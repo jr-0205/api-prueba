@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const sqlite3 = require('sqlite3').verbose();
 
 const { createApp } = require('../app');
+const config = require('../config');
 const { bootstrapDatabase } = require('../lib/bootstrap-db');
 const { VISUAL_SETTINGS } = require('../lib/visual-settings');
 
@@ -320,5 +321,30 @@ test('la configuración visual permite al administrador cambiar y restaurar enla
     assert.equal((await adminList.json()).find((item) => item.key === 'auth_background_url').customized, true);
     assert.equal((await fetch(`${baseUrl}/api/settings/auth_background_url`, authorized(admin.body.token, 'DELETE'))).status, 200);
     assert.equal((await (await fetch(`${baseUrl}/api/settings`)).json()).auth_background_url, VISUAL_SETTINGS.auth_background_url.defaultValue);
+  });
+});
+
+test('limita las sesiones simultáneas por usuario y revoca las más antiguas', async () => {
+  await withApi(async (baseUrl) => {
+    const total = config.maxSessionsPerUser + 1;
+    const tokens = [];
+    for (let index = 0; index < total; index += 1) {
+      const session = await login(baseUrl, 'admin@comet.demo', 'Admin2026!');
+      assert.equal(session.response.status, 200);
+      tokens.push(session.body.token);
+    }
+    assert.equal((await fetch(`${baseUrl}/api/users/me`, authorized(tokens[0]))).status, 401, 'la sesión más antigua debe quedar revocada');
+    for (let index = 1; index < total; index += 1) {
+      assert.equal((await fetch(`${baseUrl}/api/users/me`, authorized(tokens[index]))).status, 200, `la sesión ${index} debe seguir activa`);
+    }
+  });
+});
+
+test('el cierre de sesión revoca el token actual', async () => {
+  await withApi(async (baseUrl) => {
+    const session = await login(baseUrl, 'viewer@comet.demo', 'Viewer2026!');
+    assert.equal((await fetch(`${baseUrl}/api/users/me`, authorized(session.body.token))).status, 200);
+    assert.equal((await fetch(`${baseUrl}/api/logout`, authorized(session.body.token, 'POST'))).status, 204);
+    assert.equal((await fetch(`${baseUrl}/api/users/me`, authorized(session.body.token))).status, 401);
   });
 });

@@ -21,6 +21,10 @@ async function verifyPassword(password, storedValue) {
   return expected.length === derivedKey.length && crypto.timingSafeEqual(expected, derivedKey);
 }
 
+function createTokenId() {
+  return crypto.randomBytes(24).toString('base64url');
+}
+
 function signToken(payload, secret, ttlSeconds = 60 * 60) {
   const data = Buffer.from(JSON.stringify({
     ...payload,
@@ -48,5 +52,5 @@ function verifyToken(token, secret) {
   }
 }
 
-module.exports = { hashPassword, verifyPassword, signToken, verifyToken };
+module.exports = { createTokenId, hashPassword, verifyPassword, signToken, verifyToken };
 

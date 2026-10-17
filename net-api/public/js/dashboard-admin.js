@@ -253,7 +253,7 @@ document.querySelector('#avatarForm').addEventListener('submit', async (event) =
 document.querySelector('#cancelMovie').addEventListener('click', resetMovie);
 document.querySelector('#cancelGenre').addEventListener('click', resetGenre);
 document.querySelector('#cancelAvatar').addEventListener('click', resetAvatar);
-document.querySelector('#logout').addEventListener('click', () => { sessionStorage.removeItem('cometSession'); window.location.replace('login.html'); });
+document.querySelector('#logout').addEventListener('click', () => { fetch('/api/logout', { method: 'POST', headers: { Authorization: `Bearer ${session.token}` }, keepalive: true }).catch(() => {}).finally(() => { sessionStorage.removeItem('cometSession'); window.location.replace('login.html'); }); });
 document.querySelector('#adminName').textContent = session.user.nombre;
 document.querySelector('#adminAvatar').src = session.user.imagen || window.getCometSetting?.('avatar_fallback_url') || '';
 
