@@ -1,21 +1,7 @@
 const config = require('../config');
+const { all, run } = require('./db');
 const { hashPassword } = require('./security');
 const { VISUAL_SETTINGS } = require('./visual-settings');
-
-function run(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function onRun(error) {
-      if (error) reject(error);
-      else resolve(this);
-    });
-  });
-}
-
-function all(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (error, rows) => error ? reject(error) : resolve(rows));
-  });
-}
 
 async function bootstrapDatabase(db) {
   await run(db, 'PRAGMA foreign_keys = ON');

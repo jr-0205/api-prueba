@@ -1,14 +1,12 @@
 const express = require('express');
 
+const { movieImageColumns } = require('../lib/queries');
 const { requireSelfOrAdmin } = require('../middleware/auth');
 const { parsePositiveInteger } = require('../lib/validation');
 
 const router = express.Router();
 const selectProgress = `
-  SELECT s.progreso, s.fecha_actualizacion, p.id, p.titulo, p.anio, p.duracion,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_vertical,
-         COALESCE(NULLIF(p.imagen_horizontal, ''), NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_horizontal,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen,
+  SELECT s.progreso, s.fecha_actualizacion, p.id, p.titulo, p.anio, p.duracion,${movieImageColumns},
          p.sinopsis, p.trailer, g.nombre AS genero
   FROM seguir_viendo s
   INNER JOIN peliculas p ON p.id = s.pelicula_id

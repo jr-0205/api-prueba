@@ -1,14 +1,12 @@
 const express = require('express');
 
+const { movieImageColumns } = require('../lib/queries');
 const { requireSelfOrAdmin } = require('../middleware/auth');
 const { parsePositiveInteger } = require('../lib/validation');
 
 const router = express.Router();
 const selectFavorites = `
-  SELECT p.id, p.titulo, p.anio, p.duracion,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_vertical,
-         COALESCE(NULLIF(p.imagen_horizontal, ''), NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_horizontal,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen,
+  SELECT p.id, p.titulo, p.anio, p.duracion,${movieImageColumns},
          p.sinopsis, p.trailer, g.nombre AS genero
   FROM peliculas p
   INNER JOIN favoritos f ON f.pelicula_id = p.id

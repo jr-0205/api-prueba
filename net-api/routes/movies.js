@@ -1,29 +1,14 @@
 const express = require('express');
 
+const { run } = require('../lib/db');
+const { selectMovies } = require('../lib/queries');
 const { normalizeHttpUrl, parsePositiveInteger } = require('../lib/validation');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
-const selectMovie = `
-  SELECT p.id, p.titulo, p.anio, p.duracion, p.genero_id, g.nombre AS genero,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_vertical,
-         COALESCE(NULLIF(p.imagen_horizontal, ''), NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_horizontal,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen,
-         p.sinopsis, p.trailer
-  FROM peliculas p
-  LEFT JOIN generos g ON p.genero_id = g.id`;
-
-function run(db, query, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(query, params, function onRun(error) {
-      if (error) reject(error);
-      else resolve(this);
-    });
-  });
-}
 
 router.get('/', (req, res, next) => {
-  req.db.all(selectMovie, [], (error, rows) => {
+  req.db.all(selectMovies, [], (error, rows) => {
     if (error) return next(error);
     return res.json(rows);
   });
@@ -32,7 +17,7 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   const id = parsePositiveInteger(req.params.id);
   if (!id) return res.status(400).json({ error: 'ID inválido.' });
-  req.db.get(`${selectMovie} WHERE p.id = ?`, [id], (error, row) => {
+  req.db.get(`${selectMovies} WHERE p.id = ?`, [id], (error, row) => {
     if (error) return next(error);
     if (!row) return res.status(404).json({ error: 'Película no encontrada.' });
     return res.json(row);

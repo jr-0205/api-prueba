@@ -1,11 +1,17 @@
 node_modules/
+
+# Variables de entorno locales
 .env
 .env.*
 !.env.example
+
+# Base de datos SQLite local
+**/db/*.db
+**/db/*.db-journal
+**/db/*.db-wal
+
+# Registros, cachés y sistema operativo
 *.log
-coverage/
-dist/
-net-api/db/*.db-journal
-net-api/db/*.db-shm
-net-api/db/*.db-wal
-net-api/db/*.db
+npm-debug.log*
+.DS_Store
+Thumbs.db

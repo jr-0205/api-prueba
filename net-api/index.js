@@ -1,7 +1,11 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const sqlite3 = require('sqlite3').verbose();
 const config = require('./config');
 const { createApp } = require('./app');
 const { bootstrapDatabase } = require('./lib/bootstrap-db');
+
+fs.mkdirSync(path.dirname(config.databasePath), { recursive: true });
 
 const db = new sqlite3.Database(config.databasePath, async (err) => {
     if (err) {

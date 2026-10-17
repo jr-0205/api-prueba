@@ -1,14 +1,12 @@
 const express = require('express');
 
+const { movieImageColumns } = require('../lib/queries');
 const { requireSelfOrAdmin } = require('../middleware/auth');
 const { parsePositiveInteger } = require('../lib/validation');
 
 const router = express.Router();
 const selectHistory = `
-  SELECT h.id AS historial_id, h.fecha, p.id, p.titulo, p.anio, p.duracion,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_vertical,
-         COALESCE(NULLIF(p.imagen_horizontal, ''), NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen_horizontal,
-         COALESCE(NULLIF(p.imagen_vertical, ''), p.imagen) AS imagen,
+  SELECT h.id AS historial_id, h.fecha, p.id, p.titulo, p.anio, p.duracion,${movieImageColumns},
          p.sinopsis, p.trailer, g.nombre AS genero
   FROM historial h
   INNER JOIN peliculas p ON p.id = h.pelicula_id
