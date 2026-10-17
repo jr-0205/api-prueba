@@ -12,10 +12,11 @@ html{color-scheme:dark;-webkit-text-size-adjust:100%}
 body{
   margin:0;
   min-height:100vh;
+  min-height:100dvh;
   display:grid;
   place-items:center;
   padding:32px;
-  overflow:hidden;
+  overflow-x:hidden;
   color:var(--text);
   font:16px/1.55 var(--font);
   text-align:center;
@@ -29,13 +30,16 @@ body{
 body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 50% -10%,rgba(37,74,122,.28),transparent 62%)}
 .container{position:relative;z-index:1;max-width:760px;padding:clamp(28px,5vw,54px)}
 .container::before{content:"COMET · BETA";display:block;margin-bottom:18px;color:var(--accent);font-size:.74rem;font-weight:800;letter-spacing:.28em}
-.container h1{font-size:clamp(2.2rem,7vw,4rem);line-height:1;letter-spacing:-.04em;margin:0 0 18px}
+.container h1{font-size:clamp(2rem,7vw,4rem);line-height:1.05;letter-spacing:-.04em;margin:0 0 18px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:14px 30px;font-size:1rem;font-weight:600;border:0;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;transition:background .18s ease,transform .18s ease}
 .btn:hover{background:#5c98e0}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 @media(max-width:520px){
-  .container h1{font-size:2rem}
-  .btn{padding:12px 22px;font-size:.95rem}
+  body{padding:22px 18px}
+  .container{padding:14px}
+  .container::before{letter-spacing:.2em}
+  .container h1{font-size:clamp(1.8rem,9vw,2.4rem)}
+  .btn{width:100%;padding:13px 22px;font-size:.95rem}
 }
 @media(prefers-reduced-motion:reduce){
   .btn{transition:none}
