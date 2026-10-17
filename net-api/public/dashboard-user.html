@@ -16,7 +16,7 @@
   <main class="main-area">
     <header class="topbar"><input id="search" class="search" type="search" placeholder="Buscar películas, géneros o años…" aria-label="Buscar catálogo"><div class="top-actions"><button class="icon-button" data-view="favorites" aria-label="Favoritos">♥</button><button class="icon-button" data-view="profile" aria-label="Perfil">●</button></div></header>
     <section id="view-home" class="view active">
-      <article id="hero" class="hero"><div class="hero-content"><span class="eyebrow">Selección Comet</span><h1 id="heroTitle">Cargando catálogo…</h1><p id="heroCopy">Estamos preparando tu experiencia.</p><div class="hero-actions"><button id="heroTrailer" class="button" type="button">▶ Reproducir tráiler</button><button id="heroFavorite" class="button secondary" type="button">Agregar a favoritos</button><button class="button secondary" data-scroll-catalog type="button">Ver catálogo</button></div></div></article>
+      <article id="hero" class="hero"><div class="hero-content"><span class="eyebrow">Selección Comet</span><h1 id="heroTitle">Cargando catálogo…</h1><p id="heroCopy">Estamos preparando tu experiencia.</p><div class="hero-actions"><button id="heroTrailer" class="button" type="button">▶ Reproducir</button><button id="heroDetails" class="button secondary" type="button">Más información</button><button id="heroFavorite" class="button secondary" type="button">Agregar a favoritos</button><button class="button ghost" data-scroll-catalog type="button">Ver catálogo</button></div></div></article>
       <section class="section" id="catalog"><div class="section-head"><div><span class="eyebrow">Explorar</span><h2>Películas disponibles</h2></div><span id="catalogCount" class="muted"></span></div><div id="movieGrid" class="media-grid"></div></section>
     </section>
     <section id="view-favorites" class="view"><div class="section-head"><div><span class="eyebrow">Tu biblioteca</span><h1>Mis favoritos</h1></div></div><div id="favoriteGrid" class="media-grid"></div></section>
@@ -24,10 +24,31 @@
     <section id="view-profile" class="view"><div class="section-head"><div><span class="eyebrow">Cuenta</span><h1>Editar perfil</h1></div></div><div class="surface profile-grid"><div class="profile-visual"><img id="profileAvatar" class="avatar" alt=""><strong id="profileRole" class="role-badge">Espectador</strong></div><div class="profile-forms"><form id="profileForm" class="form-grid"><h2>Información personal</h2><label class="field"><span>Nombre</span><input name="nombre" autocomplete="name" minlength="2" maxlength="80" required></label><label class="field"><span>Correo</span><input name="correo" type="email" autocomplete="email" maxlength="254" required></label><fieldset class="avatar-picker"><legend>Elige una foto aprobada</legend><p class="muted">El administrador controla las imágenes disponibles; no se permiten archivos ni enlaces personales.</p><div id="avatarChoices" class="avatar-choice-grid"></div></fieldset><div class="form-actions"><button class="button" type="submit">Guardar cambios</button></div><p id="profileMessage" class="message" role="status" aria-live="polite"></p></form><form id="passwordForm" class="form-grid account-subform"><h2>Seguridad</h2><p class="muted">La nueva contraseña debe tener al menos ocho caracteres, una letra y un número.</p><label class="field"><span>Contraseña actual</span><input name="contraseñaActual" type="password" autocomplete="current-password" maxlength="128" required></label><label class="field"><span>Nueva contraseña</span><input name="contraseñaNueva" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><label class="field"><span>Confirmar nueva contraseña</span><input name="confirmacion" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label><div class="form-actions"><button class="button secondary" type="submit">Cambiar contraseña</button></div><p id="passwordMessage" class="message" role="status" aria-live="polite"></p></form></div></div></section>
   </main>
 </div>
+<dialog id="detailDialog" class="detail-dialog" aria-labelledby="detailTitle">
+  <article class="detail-page">
+    <div class="detail-backdrop"><img id="detailBackdrop" src="" alt=""><button class="detail-close" type="button" data-close-detail aria-label="Cerrar detalles">×</button></div>
+    <div class="detail-body">
+      <img id="detailPoster" class="detail-poster" src="" alt="">
+      <div class="detail-content">
+        <span class="eyebrow">Detalles</span>
+        <h2 id="detailTitle"></h2>
+        <p id="detailMeta" class="detail-meta"></p>
+        <div id="detailStatus" class="detail-status" hidden></div>
+        <p id="detailSynopsis" class="detail-synopsis"></p>
+        <div class="detail-actions">
+          <button id="detailPlay" class="button" type="button">▶ Reproducir</button>
+          <button id="detailFavorite" class="button secondary" type="button" aria-pressed="false">♡ Agregar a favoritos</button>
+          <button id="detailProgress" class="button secondary" type="button">Actualizar progreso</button>
+          <button id="detailRemove" class="button danger" type="button" hidden>Quitar</button>
+        </div>
+      </div>
+    </div>
+  </article>
+</dialog>
 <dialog id="progressDialog" class="modal"><form id="progressForm" method="dialog" class="form-grid"><input type="hidden" name="peliculaId"><span class="eyebrow">Seguir viendo</span><h2 id="progressTitle">Actualizar progreso</h2><label class="field"><span>Progreso: <output id="progressValue">25%</output></span><input name="progreso" type="range" min="0" max="100" step="5" value="25"></label><p class="muted">Al llegar a 100%, la película pasará al historial.</p><div class="form-actions"><button class="button" value="save" type="submit">Guardar</button><button class="button secondary" value="cancel" type="button" data-close-progress>Cancelar</button></div><p id="progressMessage" class="message" role="status"></p></form></dialog>
 <dialog id="trailerDialog" class="trailer-dialog" aria-labelledby="trailerTitle">
   <article class="trailer-page">
-    <header class="trailer-header"><div><span class="eyebrow">Reproduciendo en Comet</span><h2 id="trailerTitle">Tráiler</h2></div><button class="trailer-close" type="button" data-close-trailer aria-label="Cerrar reproductor">×</button></header>
+    <header class="trailer-header"><div><span class="eyebrow">Reproduciendo en Comet</span><h2 id="trailerTitle">Película</h2></div><div class="trailer-tools"><button id="playerFullscreen" class="trailer-tool" type="button" aria-label="Pantalla completa" aria-pressed="false" title="Pantalla completa">⛶</button><button class="trailer-close" type="button" data-close-trailer aria-label="Cerrar reproductor">×</button></div></header>
     <div class="trailer-screen"><iframe id="trailerFrame" title="Reproductor de tráiler" src="" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><div id="trailerUnavailable" class="trailer-empty" hidden><strong>Tráiler no disponible</strong><p>Esta película todavía no tiene un enlace compatible de YouTube.</p></div></div>
     <div class="trailer-details"><div><span id="trailerMeta" class="eyebrow"></span><p id="trailerSynopsis" class="muted"></p></div><p class="trailer-help">Puedes cerrar con Esc. El video se reproduce aquí sin abrir YouTube.</p></div>
   </article>

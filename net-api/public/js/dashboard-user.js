@@ -13,6 +13,7 @@ let historyItems = [];
 let avatars = [];
 let featuredMovie = null;
 let fallbackImage = '';
+let detailMovieId = null;
 
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}`, ...(options.headers || {}) } });
@@ -25,19 +26,33 @@ async function api(path, options = {}) {
 
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[character]));
 const isFavorite = (id) => favorites.some((movie) => movie.id === id);
-function card(movie) {
-  return `<article class="media-card" data-movie-id="${movie.id}" tabindex="0" aria-label="${escapeHtml(movie.titulo)}. Doble clic para reproducir el tráiler"><img src="${escapeHtml(movie.imagen_vertical || movie.imagen || fallbackImage)}" alt="Portada vertical de ${escapeHtml(movie.titulo)}"><div class="media-info"><h3>${escapeHtml(movie.titulo)}</h3><p>${escapeHtml(movie.genero || 'Selección')} · ${escapeHtml(movie.anio || '—')}</p><span class="media-hint">▶ Doble clic para ver tráiler</span><div class="card-actions"><button class="button secondary" data-favorite="${movie.id}">${isFavorite(movie.id) ? 'Quitar ♥' : 'Guardar ♡'}</button><button class="button secondary" data-progress="${movie.id}">Progreso</button></div></div></article>`;
+const progressOf = (id) => progressItems.find((movie) => movie.id === id) || null;
+const historyOf = (id) => historyItems.find((movie) => movie.id === id) || null;
+const posterSource = (movie) => movie.imagen_vertical || movie.imagen || fallbackImage;
+
+function card(movie, options = {}) {
+  const progress = progressOf(movie.id);
+  const favorite = isFavorite(movie.id);
+  return `<article class="media-card" data-movie-id="${movie.id}" tabindex="0" role="button" aria-label="Ver detalles de ${escapeHtml(movie.titulo)}">
+    <span class="poster">
+      <img src="${escapeHtml(posterSource(movie))}" alt="Póster de ${escapeHtml(movie.titulo)}" loading="lazy">
+      ${favorite ? '<span class="badge badge-fav" aria-hidden="true">♥</span>' : ''}
+      ${options.seen ? '<span class="badge badge-seen">Vista</span>' : ''}
+      ${progress ? `<span class="poster-progress" aria-hidden="true"><i style="width:${progress.progreso}%"></i></span>` : ''}
+    </span>
+    <div class="media-info"><h3>${escapeHtml(movie.titulo)}</h3><p>${escapeHtml(movie.genero || 'Selección')} · ${escapeHtml(movie.anio || '—')}</p></div>
+  </article>`;
 }
 function renderCatalog(list = movies) {
-  document.querySelector('#movieGrid').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">No encontramos películas con ese criterio.</div>';
+  document.querySelector('#movieGrid').innerHTML = list.length ? list.map((movie) => card(movie)).join('') : '<div class="empty">No encontramos películas con ese criterio.</div>';
   document.querySelector('#catalogCount').textContent = `${list.length} títulos`;
 }
 function renderFavorites() {
-  document.querySelector('#favoriteGrid').innerHTML = favorites.length ? favorites.map(card).join('') : '<div class="empty">Todavía no guardas favoritos. Explora el catálogo y crea tu selección.</div>';
+  document.querySelector('#favoriteGrid').innerHTML = favorites.length ? favorites.map((movie) => card(movie)).join('') : '<div class="empty">Todavía no guardas favoritos. Explora el catálogo y crea tu selección.</div>';
 }
 function renderActivity() {
-  document.querySelector('#progressGrid').innerHTML = progressItems.length ? progressItems.map((movie) => `<article class="media-card" data-movie-id="${movie.id}" tabindex="0" aria-label="${escapeHtml(movie.titulo)}. Doble clic para reproducir el tráiler"><img src="${escapeHtml(movie.imagen_vertical || movie.imagen || fallbackImage)}" alt="Portada vertical de ${escapeHtml(movie.titulo)}"><div class="media-info"><h3>${escapeHtml(movie.titulo)}</h3><p>${escapeHtml(movie.genero || 'Selección')} · ${movie.progreso}%</p><span class="media-hint">▶ Doble clic para ver tráiler</span><div class="progress-track"><span style="width:${movie.progreso}%"></span></div><div class="card-actions"><button class="button secondary" data-progress="${movie.id}">Actualizar</button><button class="button danger" data-remove-progress="${movie.id}">Quitar</button></div></div></article>`).join('') : '<div class="empty">No tienes películas en progreso.</div>';
-  document.querySelector('#historyGrid').innerHTML = historyItems.length ? historyItems.map((movie) => `<article class="media-card" data-movie-id="${movie.id}" tabindex="0" aria-label="${escapeHtml(movie.titulo)}. Doble clic para reproducir el tráiler"><img src="${escapeHtml(movie.imagen_vertical || movie.imagen || fallbackImage)}" alt="Portada vertical de ${escapeHtml(movie.titulo)}"><div class="media-info"><h3>${escapeHtml(movie.titulo)}</h3><p>Vista el ${escapeHtml(movie.fecha)}</p><span class="media-hint">▶ Doble clic para ver tráiler</span><div class="card-actions"><button class="button secondary" data-progress="${movie.id}">Ver de nuevo</button><button class="button danger" data-remove-history="${movie.historial_id}">Quitar</button></div></div></article>`).join('') : '<div class="empty">Tu historial está vacío.</div>';
+  document.querySelector('#progressGrid').innerHTML = progressItems.length ? progressItems.map((movie) => card(movie)).join('') : '<div class="empty">No tienes películas en progreso.</div>';
+  document.querySelector('#historyGrid').innerHTML = historyItems.length ? historyItems.map((movie) => card(movie, { seen: true })).join('') : '<div class="empty">Tu historial está vacío.</div>';
 }
 function renderAvatarChoices() {
   const grid = document.querySelector('#avatarChoices');
@@ -66,6 +81,7 @@ async function toggleFavorite(id) {
   await api(`/api/favoritos/${user.id}/${id}`, { method });
   favorites = await api(`/api/favoritos/${user.id}`); renderCatalog(); renderFavorites();
   if (featuredMovie?.id === id) updateHeroButton();
+  if (detailDialogOpen()) refreshDetail();
 }
 function updateHeroButton() {
   const button = document.querySelector('#heroFavorite');
@@ -84,12 +100,61 @@ function findMovie(movieId) {
     || progressItems.find((movie) => movie.id === movieId)
     || historyItems.find((movie) => movie.id === movieId);
 }
-function closeTrailer() {
-  const dialog = document.querySelector('#trailerDialog');
-  document.querySelector('#trailerFrame').src = '';
+
+const detailDialogOpen = () => document.querySelector('#detailDialog').open;
+function refreshDetail() { if (detailDialogOpen() && detailMovieId !== null) openDetail(detailMovieId, { focus: false }); }
+function openDetail(movieId, { focus = true } = {}) {
+  const movie = findMovie(movieId);
+  if (!movie) return;
+  detailMovieId = movieId;
+  const progress = progressOf(movieId);
+  const history = historyOf(movieId);
+  const dialog = document.querySelector('#detailDialog');
+
+  document.querySelector('#detailBackdrop').src = movie.imagen_horizontal || posterSource(movie);
+  document.querySelector('#detailBackdrop').alt = '';
+  document.querySelector('#detailPoster').src = posterSource(movie);
+  document.querySelector('#detailPoster').alt = `Póster de ${movie.titulo}`;
+  document.querySelector('#detailTitle').textContent = movie.titulo;
+  document.querySelector('#detailMeta').textContent = [movie.genero, movie.anio, movie.duracion].filter(Boolean).join(' · ') || 'Selección Comet';
+  document.querySelector('#detailSynopsis').textContent = movie.sinopsis || 'Sinopsis no disponible todavía.';
+
+  const status = document.querySelector('#detailStatus');
+  if (progress) {
+    status.hidden = false;
+    status.innerHTML = `<span class="status-label">Sigues viendo</span><span class="progress-track"><i style="width:${progress.progreso}%"></i></span><span class="status-value">${progress.progreso}%</span>`;
+  } else if (history) {
+    status.hidden = false;
+    status.innerHTML = `<span class="status-label">Vista</span><span class="status-value">${escapeHtml(history.fecha || '')}</span>`;
+  } else {
+    status.hidden = true; status.innerHTML = '';
+  }
+
+  const favoriteButton = document.querySelector('#detailFavorite');
+  favoriteButton.textContent = isFavorite(movieId) ? '♥ Quitar de favoritos' : '♡ Agregar a favoritos';
+  favoriteButton.setAttribute('aria-pressed', String(isFavorite(movieId)));
+  document.querySelector('#detailPlay').textContent = progress ? '▶ Continuar viendo' : '▶ Reproducir';
+
+  const removeButton = document.querySelector('#detailRemove');
+  removeButton.hidden = true;
+  removeButton.removeAttribute('data-remove-progress');
+  removeButton.removeAttribute('data-remove-history');
+  if (history) { removeButton.hidden = false; removeButton.textContent = 'Quitar del historial'; removeButton.dataset.removeHistory = history.historial_id; }
+  else if (progress) { removeButton.hidden = false; removeButton.textContent = 'Quitar de seguir viendo'; removeButton.dataset.removeProgress = movie.id; }
+
+  if (!dialog.open) dialog.showModal();
+  if (focus) dialog.querySelector('#detailPlay').focus();
+}
+function closeDetail() {
+  const dialog = document.querySelector('#detailDialog');
   if (dialog.open) dialog.close();
 }
-function openTrailer(movieId) {
+
+function enterFullscreen(element) {
+  if (!element?.requestFullscreen) return;
+  element.requestFullscreen().catch(() => {});
+}
+function openPlayer(movieId, immersive = false) {
   const movie = findMovie(movieId);
   if (!movie) return;
   const dialog = document.querySelector('#trailerDialog');
@@ -102,47 +167,63 @@ function openTrailer(movieId) {
   frame.hidden = !embedUrl;
   unavailable.hidden = Boolean(embedUrl);
   frame.src = embedUrl || '';
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
+  if (immersive) enterFullscreen(dialog);
+  else dialog.querySelector('[data-close-trailer]').focus();
+}
+function closePlayer() {
+  const dialog = document.querySelector('#trailerDialog');
+  document.querySelector('#trailerFrame').src = '';
+  if (document.fullscreenElement) document.exitFullscreen?.();
+  if (dialog.open) dialog.close();
 }
 async function loadActivity() {
   [progressItems, historyItems] = await Promise.all([api(`/api/progress/${user.id}`), api(`/api/history/${user.id}`)]);
   renderActivity();
 }
 function openProgress(movieId) {
-  const movie = movies.find((item) => item.id === movieId) || progressItems.find((item) => item.id === movieId) || historyItems.find((item) => item.id === movieId);
+  const movie = findMovie(movieId);
   if (!movie) return;
   const dialog = document.querySelector('#progressDialog');
   const form = document.querySelector('#progressForm');
-  const current = progressItems.find((item) => item.id === movieId)?.progreso || 25;
+  const current = progressOf(movieId)?.progreso ?? 25;
   form.elements.peliculaId.value = movieId; form.elements.progreso.value = current;
   document.querySelector('#progressTitle').textContent = movie.titulo;
   document.querySelector('#progressValue').textContent = `${current}%`;
   document.querySelector('#progressMessage').textContent = '';
   dialog.showModal();
 }
+
 document.addEventListener('click', async (event) => {
-  const viewButton = event.target.closest('[data-view]'); if (viewButton) setView(viewButton.dataset.view);
-  const favoriteButton = event.target.closest('[data-favorite]'); if (favoriteButton) toggleFavorite(Number(favoriteButton.dataset.favorite)).catch((error) => alert(error.message));
-  const progressButton = event.target.closest('[data-progress]'); if (progressButton) openProgress(Number(progressButton.dataset.progress));
+  const viewButton = event.target.closest('[data-view]'); if (viewButton) { setView(viewButton.dataset.view); return; }
+  if (event.target.closest('[data-scroll-catalog]')) { document.querySelector('#catalog').scrollIntoView({ behavior: 'smooth' }); return; }
+  if (event.target.closest('[data-close-detail]')) { closeDetail(); return; }
   const removeProgress = event.target.closest('[data-remove-progress]');
-  if (removeProgress) { try { await api(`/api/progress/${user.id}/${removeProgress.dataset.removeProgress}`, { method:'DELETE' }); await loadActivity(); } catch (error) { alert(error.message); } }
+  if (removeProgress) { try { await api(`/api/progress/${user.id}/${removeProgress.dataset.removeProgress}`, { method:'DELETE' }); await loadActivity(); refreshDetail(); } catch (error) { alert(error.message); } return; }
   const removeHistory = event.target.closest('[data-remove-history]');
-  if (removeHistory) { try { await api(`/api/history/${user.id}/${removeHistory.dataset.removeHistory}`, { method:'DELETE' }); await loadActivity(); } catch (error) { alert(error.message); } }
-  if (event.target.closest('[data-scroll-catalog]')) document.querySelector('#catalog').scrollIntoView({ behavior: 'smooth' });
-});
-document.addEventListener('dblclick', (event) => {
-  if (event.target.closest('button, a, input, select, textarea')) return;
-  const movieCard = event.target.closest('[data-movie-id]');
-  if (movieCard) openTrailer(Number(movieCard.dataset.movieId));
+  if (removeHistory) { try { await api(`/api/history/${user.id}/${removeHistory.dataset.removeHistory}`, { method:'DELETE' }); await loadActivity(); refreshDetail(); } catch (error) { alert(error.message); } return; }
+  const cardElement = event.target.closest('.media-card[data-movie-id]');
+  if (cardElement) openDetail(Number(cardElement.dataset.movieId));
 });
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && event.target.matches('.media-card[data-movie-id]')) openTrailer(Number(event.target.dataset.movieId));
+  if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.media-card[data-movie-id]')) { event.preventDefault(); openDetail(Number(event.target.dataset.movieId)); }
 });
-document.querySelector('#heroTrailer').addEventListener('click', () => {
-  if (featuredMovie) openTrailer(featuredMovie.id);
+document.addEventListener('fullscreenchange', () => {
+  const button = document.querySelector('#playerFullscreen');
+  const active = Boolean(document.fullscreenElement);
+  button.setAttribute('aria-pressed', String(active));
+  button.setAttribute('aria-label', active ? 'Salir de pantalla completa' : 'Pantalla completa');
+  button.title = active ? 'Salir de pantalla completa' : 'Pantalla completa';
 });
-document.querySelector('#heroFavorite').addEventListener('click', () => {
-  if (featuredMovie) toggleFavorite(featuredMovie.id).catch((error) => alert(error.message));
+document.querySelector('#heroTrailer').addEventListener('click', () => { if (featuredMovie) openPlayer(featuredMovie.id, true); });
+document.querySelector('#heroDetails').addEventListener('click', () => { if (featuredMovie) openDetail(featuredMovie.id); });
+document.querySelector('#heroFavorite').addEventListener('click', () => { if (featuredMovie) toggleFavorite(featuredMovie.id).catch((error) => alert(error.message)); });
+document.querySelector('#detailPlay').addEventListener('click', () => openPlayer(detailMovieId, true));
+document.querySelector('#detailFavorite').addEventListener('click', () => { toggleFavorite(detailMovieId).catch((error) => alert(error.message)); });
+document.querySelector('#detailProgress').addEventListener('click', () => openProgress(detailMovieId));
+document.querySelector('#playerFullscreen').addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen?.();
+  else enterFullscreen(document.querySelector('#trailerDialog'));
 });
 document.querySelector('#search').addEventListener('input', (event) => { const term = event.target.value.trim().toLowerCase(); renderCatalog(movies.filter((movie) => [movie.titulo,movie.genero,movie.anio].some((value) => String(value || '').toLowerCase().includes(term)))); });
 document.querySelector('#avatarChoices').addEventListener('change', (event) => {
@@ -174,9 +255,11 @@ document.querySelector('#passwordForm').addEventListener('submit', async (event)
 });
 document.querySelector('#progressForm').elements.progreso.addEventListener('input', (event) => { document.querySelector('#progressValue').textContent = `${event.target.value}%`; });
 document.querySelector('[data-close-progress]').addEventListener('click', () => document.querySelector('#progressDialog').close());
-document.querySelector('[data-close-trailer]').addEventListener('click', closeTrailer);
+document.querySelector('[data-close-trailer]').addEventListener('click', closePlayer);
 document.querySelector('#trailerDialog').addEventListener('close', () => { document.querySelector('#trailerFrame').src = ''; });
-document.querySelector('#trailerDialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) closeTrailer(); });
+document.querySelector('#trailerDialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) closePlayer(); });
+document.querySelector('#detailDialog').addEventListener('close', () => { detailMovieId = null; });
+document.querySelector('#detailDialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) closeDetail(); });
 document.querySelector('#progressForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -184,12 +267,13 @@ document.querySelector('#progressForm').addEventListener('submit', async (event)
   try {
     await api(`/api/progress/${user.id}/${form.elements.peliculaId.value}`, { method:'PUT', body:JSON.stringify({ progreso:Number(form.elements.progreso.value) }) });
     await loadActivity();
+    refreshDetail();
     document.querySelector('#progressDialog').close();
   } catch (error) { message.textContent = error.message; }
 });
 document.querySelector('#clearHistory').addEventListener('click', async () => {
   if (!historyItems.length || !confirm('¿Limpiar todo tu historial?')) return;
-  try { await api(`/api/history/${user.id}`, { method:'DELETE' }); await loadActivity(); }
+  try { await api(`/api/history/${user.id}`, { method:'DELETE' }); await loadActivity(); refreshDetail(); }
   catch (error) { alert(error.message); }
 });
 document.querySelector('#logout').addEventListener('click', () => { sessionStorage.removeItem('cometSession'); window.location.replace('login.html'); });
