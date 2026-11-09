@@ -57,6 +57,38 @@ async function bootstrapDatabase(db) {
     SET imagen_vertical = COALESCE(NULLIF(imagen_vertical, ''), imagen),
         imagen_horizontal = COALESCE(NULLIF(imagen_horizontal, ''), imagen)
     WHERE imagen IS NOT NULL AND TRIM(imagen) <> ''`);
+
+  // Render y otros despliegues efímeros pueden iniciar con una SQLite nueva
+  // porque db/database.db no se versiona. En ese caso cargamos un catálogo
+  // inicial para que la aplicación no aparezca vacía. Nunca sobrescribe datos.
+  const movieCount = await all(db, 'SELECT COUNT(*) AS total FROM peliculas');
+  if (Number(movieCount[0]?.total || 0) === 0 && process.env.SEED_DEMO_CATALOG?.toLowerCase() !== 'false') {
+    const seedMovies = [
+      { genre: 'Ciencia ficción', title: 'Interestelar', year: 2014, duration: '169 min', synopsis: 'Un equipo de exploradores viaja más allá de esta galaxia para descubrir si la humanidad tiene futuro entre las estrellas.' },
+      { genre: 'Ciencia ficción', title: 'Matrix', year: 1999, duration: '136 min', synopsis: 'Un programador descubre que la realidad que conoce es una simulación y se une a quienes buscan liberarse de ella.' },
+      { genre: 'Ciencia ficción', title: 'Duna', year: 2021, duration: '155 min', synopsis: 'Paul Atreides llega a un planeta desértico cuyo recurso más valioso puede cambiar el destino de la humanidad.' },
+      { genre: 'Acción', title: 'El caballero de la noche', year: 2008, duration: '152 min', synopsis: 'Batman se enfrenta a una nueva amenaza que pone a prueba los límites de la justicia en Gotham.' },
+      { genre: 'Acción', title: 'Spider-Man: Sin camino a casa', year: 2021, duration: '148 min', synopsis: 'Peter Parker busca ayuda para recuperar su vida privada, pero las consecuencias abren la puerta a visitantes inesperados.' },
+      { genre: 'Aventura', title: 'Avatar', year: 2009, duration: '162 min', synopsis: 'Un exmarine llega a Pandora y debe decidir entre cumplir su misión o proteger el mundo que ha llegado a conocer.' },
+      { genre: 'Drama', title: 'En busca de la felicidad', year: 2006, duration: '117 min', synopsis: 'Un padre enfrenta grandes dificultades mientras busca construir un futuro mejor para su hijo.' },
+      { genre: 'Animación', title: 'Coco', year: 2017, duration: '105 min', synopsis: 'Un joven músico viaja al mundo de los muertos y descubre la historia de su familia.' },
+      { genre: 'Animación', title: 'Spider-Man: Un nuevo universo', year: 2018, duration: '117 min', synopsis: 'Miles Morales descubre sus habilidades y conoce a otros héroes arácnidos de distintas realidades.' },
+      { genre: 'Aventura', title: 'Jurassic Park', year: 1993, duration: '127 min', synopsis: 'Un grupo de visitantes descubre que un parque temático de dinosaurios puede convertirse en un lugar peligroso.' },
+    ];
+    const genreIds = new Map();
+    for (const movie of seedMovies) {
+      if (!genreIds.has(movie.genre)) {
+        await run(db, 'INSERT OR IGNORE INTO generos (nombre) VALUES (?)', [movie.genre]);
+        const genre = await all(db, 'SELECT id FROM generos WHERE nombre = ?', [movie.genre]);
+        genreIds.set(movie.genre, genre[0].id);
+      }
+      await run(
+        db,
+        'INSERT INTO peliculas (titulo, anio, duracion, genero_id, sinopsis) VALUES (?, ?, ?, ?, ?)',
+        [movie.title, movie.year, movie.duration, genreIds.get(movie.genre), movie.synopsis],
+      );
+    }
+  }
   await run(db, `CREATE TABLE IF NOT EXISTS favoritos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,
