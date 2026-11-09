@@ -19,9 +19,8 @@
         <button class="button" type="submit">Entrar a Comet</button>
       </form>
       <p id="message" class="message" role="status" aria-live="polite"></p>
-      <div class="demo-panel public-demo"><h3>Accesos públicos de prueba</h3><p class="public-demo-note">Credenciales ficticias expuestas intencionalmente. No contienen información real.</p>
-        <div class="demo-row"><div><strong>Administrador</strong><small>admin@comet.demo · Admin2026!</small></div><button class="demo-use" type="button" data-demo-email="admin@comet.demo" data-demo-password="Admin2026!" data-demo-submit>Entrar como admin</button></div>
-        <div class="demo-row"><div><strong>Espectador</strong><small>viewer@comet.demo · Viewer2026!</small></div><button class="demo-use" type="button" data-demo-email="viewer@comet.demo" data-demo-password="Viewer2026!" data-demo-submit>Entrar como espectador</button></div>
+      <div class="demo-panel public-demo" id="demoPanel" hidden><h3>Accesos públicos de prueba</h3><p class="public-demo-note">Credenciales ficticias expuestas intencionalmente. No contienen información real.</p>
+        <div id="demoRows"></div>
       </div>
       <p class="auth-link">¿Quieres tu propio perfil? <a href="register.html">Crear cuenta</a></p>
     </section>

@@ -32,6 +32,14 @@ function createApp(db) {
     service: 'Comet Movies API',
     version,
   }));
+  // Única fuente de verdad de los accesos de prueba: el login pinta sus botones con
+  // lo que responda aquí, así la página nunca promete credenciales que no existen.
+  app.get('/api/auth/demo', (_req, res) => res.json({
+    enabled: config.enableDemoUsers,
+    users: config.enableDemoUsers
+      ? config.demoUsers.map(({ nombre, correo, password, rol }) => ({ nombre, correo, password, rol }))
+      : [],
+  }));
   app.use('/api/settings', require('./routes/settings'));
   app.use('/api/avatars', requireAuth, require('./routes/avatars'));
   app.use('/api/genres', require('./routes/genres'));

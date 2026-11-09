@@ -1,4 +1,20 @@
+const fs = require('node:fs');
 const path = require('node:path');
+
+// Carga `net-api/.env` sin dependencias. Solo rellena variables que aún no están
+// definidas, así que las variables del sistema (dashboard de Render, shell) mandan.
+function loadEnvFile(file) {
+  if (!fs.existsSync(file)) return;
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/.exec(line);
+    if (!match) continue;
+    const [, key, rawValue] = match;
+    if (key in process.env) continue;
+    process.env[key] = rawValue.trim().replace(/^(['"])([\s\S]*)\1$/, '$2');
+  }
+}
+
+loadEnvFile(path.join(__dirname, '.env'));
 
 function parsePort(value) {
   const port = Number(value || 3000);
@@ -31,7 +47,9 @@ module.exports = Object.freeze({
   isProduction,
   sessionTtlSeconds: 60 * 60,
   maxSessionsPerUser: parseMaxSessions(process.env.MAX_SESSIONS_PER_USER),
-  enableDemoUsers: !isProduction && process.env.ENABLE_DEMO_USERS !== 'false',
+  // Las credenciales de prueba se anuncian en el login y son el modo previsto de
+  // recorrer la demo. Se apagan con ENABLE_DEMO_USERS=false.
+  enableDemoUsers: process.env.ENABLE_DEMO_USERS?.toLowerCase() !== 'false',
   demoUsers: [
     {
       nombre: 'Alex Morgan',
@@ -47,4 +65,3 @@ module.exports = Object.freeze({
     },
   ],
 });
-

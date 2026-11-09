@@ -17,7 +17,7 @@ o para la version en linea puedes usar `https://api-prueba-9hox.onrender.com/`
 
 ## Accesos de demostración
 
-Estas credenciales ficticias están expuestas intencionalmente en el login y pueden abrir cada panel con un clic. Se mantienen configurables en `.env` y se desactivan automáticamente cuando `NODE_ENV=production`.
+Estas credenciales ficticias están expuestas intencionalmente en el login y pueden abrir cada panel con un clic. El servidor las publica en `GET /api/auth/demo` y el login pinta sus botones con esa respuesta, así que la página nunca ofrece credenciales que no existen. Se mantienen configurables por variables de entorno (`.env` en local, dashboard en el despliegue) y se desactivan con `ENABLE_DEMO_USERS=false`; en ese caso el panel de accesos deja de mostrarse.
 
 | Rol | Usuario | Contraseña | Alcance |
 |---|---|---|---|

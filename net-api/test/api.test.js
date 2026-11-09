@@ -136,6 +136,21 @@ test('credenciales demo respetan sus roles y permisos', async () => {
   });
 });
 
+test('los accesos publicados en el login inician sesión de verdad', async () => {
+  await withApi(async (baseUrl) => {
+    const demo = await (await fetch(`${baseUrl}/api/auth/demo`)).json();
+    assert.equal(demo.enabled, config.enableDemoUsers);
+    assert.ok(Array.isArray(demo.users));
+    assert.ok(demo.users.length > 0, 'El login promete accesos de prueba pero el servidor no publica ninguno.');
+
+    for (const user of demo.users) {
+      const access = await login(baseUrl, user.correo, user.password);
+      assert.equal(access.response.status, 200, `${user.correo} no pudo iniciar sesión con la contraseña publicada.`);
+      assert.equal(access.body.usuario.rol, user.rol);
+    }
+  });
+});
+
 test('los cambios de rol se aplican inmediatamente a tokens existentes', async () => {
   await withApi(async (baseUrl) => {
     const admin = await login(baseUrl, 'admin@comet.demo', 'Admin2026!');
