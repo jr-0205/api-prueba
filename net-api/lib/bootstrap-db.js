@@ -46,12 +46,26 @@ async function bootstrapDatabase(db) {
     trailer TEXT,
     FOREIGN KEY (genero_id) REFERENCES generos(id)
   )`);
+  // Las bases SQLite persistentes pueden venir de versiones anteriores.
+  // CREATE TABLE IF NOT EXISTS no agrega columnas a tablas ya existentes;
+  // garantizamos aquí todas las columnas que consulta /api/movies.
   const movieColumns = await all(db, 'PRAGMA table_info(peliculas)');
-  if (!movieColumns.some((column) => column.name === 'imagen_vertical')) {
-    await run(db, 'ALTER TABLE peliculas ADD COLUMN imagen_vertical TEXT');
-  }
-  if (!movieColumns.some((column) => column.name === 'imagen_horizontal')) {
-    await run(db, 'ALTER TABLE peliculas ADD COLUMN imagen_horizontal TEXT');
+  const existingMovieColumns = new Set(movieColumns.map((column) => column.name));
+  const requiredMovieColumns = [
+    ['titulo', 'TEXT'],
+    ['anio', 'INTEGER'],
+    ['duracion', 'TEXT'],
+    ['genero_id', 'INTEGER'],
+    ['imagen', 'TEXT'],
+    ['imagen_vertical', 'TEXT'],
+    ['imagen_horizontal', 'TEXT'],
+    ['sinopsis', 'TEXT'],
+    ['trailer', 'TEXT'],
+  ];
+  for (const [column, type] of requiredMovieColumns) {
+    if (!existingMovieColumns.has(column)) {
+      await run(db, `ALTER TABLE peliculas ADD COLUMN ${column} ${type}`);
+    }
   }
   await run(db, `UPDATE peliculas
     SET imagen_vertical = COALESCE(NULLIF(imagen_vertical, ''), imagen),
