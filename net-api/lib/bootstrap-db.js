@@ -125,6 +125,27 @@ async function bootstrapDatabase(db) {
       );
     }
   }
+
+  // Asigna tráilers de YouTube al catálogo demo. Solo rellena valores vacíos
+  // para no reemplazar enlaces que el administrador ya haya configurado.
+  const demoTrailersByTitle = [
+    ['Interestelar', 'https://www.youtube.com/watch?v=zSWdZVtXT7E'],
+    ['Matrix', 'https://www.youtube.com/watch?v=m8e-FF8MsqU'],
+    ['Duna', 'https://www.youtube.com/watch?v=rPqTIibDpq4'],
+    ['El caballero de la noche', 'https://www.youtube.com/watch?v=kmJLuwP3MbY'],
+    ['Spider-Man: Sin camino a casa', 'https://www.youtube.com/watch?v=ZYzbalQ6Lg8'],
+    ['Avatar', 'https://www.youtube.com/watch?v=5PSNL1qE6VY'],
+    ['En busca de la felicidad', 'https://www.youtube.com/watch?v=DMOBlEcRuw8'],
+    ['Coco', 'https://www.youtube.com/watch?v=Rvr68u6k5sI'],
+    ['Spider-Man: Un nuevo universo', 'https://www.youtube.com/watch?v=g4Hbz2jLxvQ'],
+    ['Jurassic Park', 'https://www.youtube.com/watch?v=g24fYA3pXKI'],
+  ];
+  for (const [title, trailerUrl] of demoTrailersByTitle) {
+    await run(db, `UPDATE peliculas
+      SET trailer = COALESCE(NULLIF(TRIM(trailer), ''), ?)
+      WHERE titulo = ?`, [trailerUrl, title]);
+  }
+
   await run(db, `CREATE TABLE IF NOT EXISTS favoritos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,
