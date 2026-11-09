@@ -88,6 +88,16 @@ test('una base vacía recibe un catálogo demo y el arranque no duplica películ
   }
 });
 
+test('GET /api/movies devuelve el catálogo inicial sin autenticación', async () => {
+  await withApi(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/movies`);
+    assert.equal(response.status, 200);
+    const movies = await response.json();
+    assert.equal(movies.length, 10);
+    assert.ok(movies.every((movie) => movie.id && movie.titulo && movie.anio));
+  });
+});
+
 test('la migración conserva la imagen anterior en ambos formatos', async () => {
   const db = new sqlite3.Database(':memory:');
   try {
