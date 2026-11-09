@@ -68,6 +68,26 @@ test('el arranque construye todos los módulos sobre una base vacía', async () 
   }
 });
 
+test('una base vacía recibe un catálogo demo y el arranque no duplica películas', async () => {
+  const db = new sqlite3.Database(':memory:');
+  try {
+    await bootstrapDatabase(db);
+    const firstRun = await all(db, 'SELECT id, titulo FROM peliculas ORDER BY id');
+    assert.equal(firstRun.length, 10);
+    assert.ok(firstRun.some((movie) => movie.titulo === 'Interestelar'));
+    assert.ok(firstRun.some((movie) => movie.titulo === 'Coco'));
+
+    await bootstrapDatabase(db);
+    const secondRun = await all(db, 'SELECT id, titulo FROM peliculas ORDER BY id');
+    assert.equal(secondRun.length, 10);
+    assert.deepEqual(secondRun, firstRun);
+    const genres = await all(db, 'SELECT nombre FROM generos');
+    assert.ok(genres.length >= 5);
+  } finally {
+    await new Promise((resolve) => db.close(resolve));
+  }
+});
+
 test('la migración conserva la imagen anterior en ambos formatos', async () => {
   const db = new sqlite3.Database(':memory:');
   try {
