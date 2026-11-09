@@ -72,22 +72,44 @@ async function bootstrapDatabase(db) {
         imagen_horizontal = COALESCE(NULLIF(imagen_horizontal, ''), imagen)
     WHERE imagen IS NOT NULL AND TRIM(imagen) <> ''`);
 
+  // Completa las imágenes del catálogo demo tanto en bases nuevas como existentes.
+  // Solo rellena campos vacíos para respetar las imágenes configuradas por el administrador.
+  const demoPosterByTitle = [
+    ['Interestelar', 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg'],
+    ['Matrix', 'https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg'],
+    ['Duna', 'https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg'],
+    ['El caballero de la noche', 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg'],
+    ['Spider-Man: Sin camino a casa', 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg'],
+    ['Avatar', 'https://image.tmdb.org/t/p/w500/kyeqWdyUXW608qlYkRqosgbbJyK.jpg'],
+    ['En busca de la felicidad', 'https://image.tmdb.org/t/p/w500/lBYOKAMcvIvuk9s9h07Gm0hC5m.jpg'],
+    ['Coco', 'https://image.tmdb.org/t/p/w500/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg'],
+    ['Spider-Man: Un nuevo universo', 'https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg'],
+    ['Jurassic Park', 'https://image.tmdb.org/t/p/w500/c8Ass7acuOe4za6DHdrp5X5dQzE.jpg'],
+  ];
+  for (const [title, posterUrl] of demoPosterByTitle) {
+    await run(db, `UPDATE peliculas
+      SET imagen = COALESCE(NULLIF(imagen, ''), ?),
+          imagen_vertical = COALESCE(NULLIF(imagen_vertical, ''), ?),
+          imagen_horizontal = COALESCE(NULLIF(imagen_horizontal, ''), ?)
+      WHERE titulo = ?`, [posterUrl, posterUrl, posterUrl, title]);
+  }
+
   // Render y otros despliegues efímeros pueden iniciar con una SQLite nueva
   // porque db/database.db no se versiona. En ese caso cargamos un catálogo
   // inicial para que la aplicación no aparezca vacía. Nunca sobrescribe datos.
   const movieCount = await all(db, 'SELECT COUNT(*) AS total FROM peliculas');
   if (Number(movieCount[0]?.total || 0) === 0 && process.env.SEED_DEMO_CATALOG?.toLowerCase() !== 'false') {
     const seedMovies = [
-      { genre: 'Ciencia ficción', title: 'Interestelar', year: 2014, duration: '169 min', synopsis: 'Un equipo de exploradores viaja más allá de esta galaxia para descubrir si la humanidad tiene futuro entre las estrellas.' },
-      { genre: 'Ciencia ficción', title: 'Matrix', year: 1999, duration: '136 min', synopsis: 'Un programador descubre que la realidad que conoce es una simulación y se une a quienes buscan liberarse de ella.' },
-      { genre: 'Ciencia ficción', title: 'Duna', year: 2021, duration: '155 min', synopsis: 'Paul Atreides llega a un planeta desértico cuyo recurso más valioso puede cambiar el destino de la humanidad.' },
-      { genre: 'Acción', title: 'El caballero de la noche', year: 2008, duration: '152 min', synopsis: 'Batman se enfrenta a una nueva amenaza que pone a prueba los límites de la justicia en Gotham.' },
-      { genre: 'Acción', title: 'Spider-Man: Sin camino a casa', year: 2021, duration: '148 min', synopsis: 'Peter Parker busca ayuda para recuperar su vida privada, pero las consecuencias abren la puerta a visitantes inesperados.' },
-      { genre: 'Aventura', title: 'Avatar', year: 2009, duration: '162 min', synopsis: 'Un exmarine llega a Pandora y debe decidir entre cumplir su misión o proteger el mundo que ha llegado a conocer.' },
-      { genre: 'Drama', title: 'En busca de la felicidad', year: 2006, duration: '117 min', synopsis: 'Un padre enfrenta grandes dificultades mientras busca construir un futuro mejor para su hijo.' },
-      { genre: 'Animación', title: 'Coco', year: 2017, duration: '105 min', synopsis: 'Un joven músico viaja al mundo de los muertos y descubre la historia de su familia.' },
-      { genre: 'Animación', title: 'Spider-Man: Un nuevo universo', year: 2018, duration: '117 min', synopsis: 'Miles Morales descubre sus habilidades y conoce a otros héroes arácnidos de distintas realidades.' },
-      { genre: 'Aventura', title: 'Jurassic Park', year: 1993, duration: '127 min', synopsis: 'Un grupo de visitantes descubre que un parque temático de dinosaurios puede convertirse en un lugar peligroso.' },
+      { genre: 'Ciencia ficción', title: 'Interestelar', year: 2014, duration: '169 min', poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', synopsis: 'Un equipo de exploradores viaja más allá de esta galaxia para descubrir si la humanidad tiene futuro entre las estrellas.' },
+      { genre: 'Ciencia ficción', title: 'Matrix', year: 1999, duration: '136 min', poster: 'https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg', synopsis: 'Un programador descubre que la realidad que conoce es una simulación y se une a quienes buscan liberarse de ella.' },
+      { genre: 'Ciencia ficción', title: 'Duna', year: 2021, duration: '155 min', poster: 'https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg', synopsis: 'Paul Atreides llega a un planeta desértico cuyo recurso más valioso puede cambiar el destino de la humanidad.' },
+      { genre: 'Acción', title: 'El caballero de la noche', year: 2008, duration: '152 min', poster: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg', synopsis: 'Batman se enfrenta a una nueva amenaza que pone a prueba los límites de la justicia en Gotham.' },
+      { genre: 'Acción', title: 'Spider-Man: Sin camino a casa', year: 2021, duration: '148 min', poster: 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg', synopsis: 'Peter Parker busca ayuda para recuperar su vida privada, pero las consecuencias abren la puerta a visitantes inesperados.' },
+      { genre: 'Aventura', title: 'Avatar', year: 2009, duration: '162 min', poster: 'https://image.tmdb.org/t/p/w500/kyeqWdyUXW608qlYkRqosgbbJyK.jpg', synopsis: 'Un exmarine llega a Pandora y debe decidir entre cumplir su misión o proteger el mundo que ha llegado a conocer.' },
+      { genre: 'Drama', title: 'En busca de la felicidad', year: 2006, duration: '117 min', poster: 'https://image.tmdb.org/t/p/w500/lBYOKAMcvIvuk9s9h07Gm0hC5m.jpg', synopsis: 'Un padre enfrenta grandes dificultades mientras busca construir un futuro mejor para su hijo.' },
+      { genre: 'Animación', title: 'Coco', year: 2017, duration: '105 min', poster: 'https://image.tmdb.org/t/p/w500/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg', synopsis: 'Un joven músico viaja al mundo de los muertos y descubre la historia de su familia.' },
+      { genre: 'Animación', title: 'Spider-Man: Un nuevo universo', year: 2018, duration: '117 min', poster: 'https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg', synopsis: 'Miles Morales descubre sus habilidades y conoce a otros héroes arácnidos de distintas realidades.' },
+      { genre: 'Aventura', title: 'Jurassic Park', year: 1993, duration: '127 min', poster: 'https://image.tmdb.org/t/p/w500/c8Ass7acuOe4za6DHdrp5X5dQzE.jpg', synopsis: 'Un grupo de visitantes descubre que un parque temático de dinosaurios puede convertirse en un lugar peligroso.' },
     ];
     const genreIds = new Map();
     for (const movie of seedMovies) {
@@ -98,8 +120,8 @@ async function bootstrapDatabase(db) {
       }
       await run(
         db,
-        'INSERT INTO peliculas (titulo, anio, duracion, genero_id, sinopsis) VALUES (?, ?, ?, ?, ?)',
-        [movie.title, movie.year, movie.duration, genreIds.get(movie.genre), movie.synopsis],
+        'INSERT INTO peliculas (titulo, anio, duracion, genero_id, imagen, imagen_vertical, imagen_horizontal, sinopsis) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [movie.title, movie.year, movie.duration, genreIds.get(movie.genre), movie.poster, movie.poster, movie.poster, movie.synopsis],
       );
     }
   }
